@@ -1,8 +1,7 @@
 <template>
-  <div class="dh-glass relative overflow-hidden p-4 md:p-6">
+  <div>
     <div class="flex flex-wrap items-center justify-end gap-2">
       <button type="button" class="dh-toggle" @click="$emit('toggle:dark')">
-        <span>{{ darkMode ? 'Light Mode' : 'Dark Mode' }}</span>
         <span aria-hidden="true">{{ darkMode ? '☀' : '☾' }}</span>
       </button>
       <button type="button" class="dh-toggle" @click="$emit('toggle:sidebar')">
