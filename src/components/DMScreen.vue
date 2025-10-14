@@ -134,8 +134,24 @@ const sizeOptions: SizeOption[] = [
   { value: 'large', label: 'Showcase', columns: 3 },
 ]
 
-const createId = () => `widget-${Math.random().toString(36).slice(2, 8)}`
-const createBackgroundId = () => `bg-${Math.random().toString(36).slice(2, 8)}`
+let widgetCounter = 0
+const createId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `widget-${crypto.randomUUID()}`
+  } else {
+    widgetCounter += 1
+    return `widget-${Date.now()}-${widgetCounter}`
+  }
+}
+let bgCounter = 0
+const createBackgroundId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `bg-${crypto.randomUUID()}`
+  } else {
+    bgCounter += 1
+    return `bg-${Date.now()}-${bgCounter}`
+  }
+}
 
 const darkMode = ref(false)
 const fearLevel = ref(0)
