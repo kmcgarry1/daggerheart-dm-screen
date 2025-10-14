@@ -54,7 +54,7 @@ const computedStyle = computed(() => ({
   background: var(--dh-panel-bg);
   color: var(--dh-panel-text);
   box-shadow: 0 18px 40px var(--dh-shadow);
-  backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(12px) saturate(180%);
   transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 

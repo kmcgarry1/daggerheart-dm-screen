@@ -28,7 +28,8 @@
           <template #title>
             <div class="flex flex-wrap items-center justify-between gap-3">
               <input
-                v-if="widget.editing"
+                v-if="widget.editing && widget.type === 'note'"
+                :id="`${widget.id}-title`"
                 :value="widget.title"
                 type="text"
                 placeholder="Widget title"
@@ -36,7 +37,7 @@
                 @input="updateWidget(widget.id, 'title', ($event.target as HTMLInputElement).value)"
               />
               <span v-else class="text-base font-semibold">
-                {{ widget.title || 'Untitled Widget' }}
+                {{ widget.title || (widget.type === 'countdown' ? 'Countdown' : 'Untitled Widget') }}
               </span>
               <div class="flex items-center gap-2">
                 <select
@@ -74,16 +75,22 @@
           </template>
           <template #body>
             <textarea
-              v-if="widget.editing"
+              v-if="widget.editing && widget.type === 'note'"
               :value="widget.body"
               rows="4"
               placeholder="Notes, trackers, reminders..."
               class="w-full rounded-xl border border-violet-200/70 bg-[var(--dh-panel-bg)] px-3 py-3 text-sm text-[color:var(--dh-panel-text)] shadow-sm focus:border-violet-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
               @input="updateWidget(widget.id, 'body', ($event.target as HTMLTextAreaElement).value)"
             ></textarea>
-            <p v-else class="text-sm leading-relaxed text-[color:var(--dh-panel-muted)]">
+            <p v-else-if="widget.type === 'note'" class="text-sm leading-relaxed text-[color:var(--dh-panel-muted)]">
               {{ widget.body || 'Add notes or quick references for your session.' }}
             </p>
+            <CountdownWidgetCard
+              v-else
+              :config="widget.countdown"
+              :editing="widget.editing"
+              @update:config="updateCountdown(widget.id, $event)"
+            />
           </template>
         </dh-card>
       </div>
@@ -107,6 +114,8 @@
 import { toRefs } from 'vue'
 
 import DhCard from '../core/DhCard.vue'
+import CountdownWidgetCard from '../countdown/CountdownWidgetCard.vue'
+import type { CountdownConfig } from '../countdown/types'
 
 type WidgetSize = 'small' | 'medium' | 'large'
 
@@ -116,13 +125,26 @@ type SizeOption = {
   columns: number
 }
 
-type DashboardWidget = {
+type NoteWidget = {
   id: string
   title: string
   body: string
   size: WidgetSize
   editing: boolean
+  type: 'note'
 }
+
+type CountdownWidget = {
+  id: string
+  title: string
+  size: WidgetSize
+  editing: boolean
+  type: 'countdown'
+  countdown: CountdownConfig
+  description: string
+}
+
+type DashboardWidget = NoteWidget | CountdownWidget
 
 const props = defineProps<{
   widgets: DashboardWidget[]
@@ -136,11 +158,22 @@ const emit = defineEmits<{
   (e: 'toggle-edit', id: string): void
   (e: 'remove-widget', id: string): void
   (e: 'update-widget', payload: { id: string; key: 'title' | 'body' | 'size'; value: string }): void
+  (
+    e: 'update-countdown',
+    payload: { id: string; config: CountdownConfig; title: string; description: string },
+  ): void
   (e: 'toggle-collapsed'): void
 }>()
 
 const updateWidget = (id: string, key: 'title' | 'body' | 'size', value: string) => {
   emit('update-widget', { id, key, value })
+}
+
+const updateCountdown = (
+  id: string,
+  payload: { config: CountdownConfig; title: string; description: string },
+) => {
+  emit('update-countdown', { id, ...payload })
 }
 
 const { widgets, activeWidgetId, sizeOptions, spanClassForSize, collapsed } = toRefs(props)

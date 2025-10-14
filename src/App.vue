@@ -1,17 +1,7 @@
 <script setup lang="ts">
-import DMScreen from './components/DMScreen.vue';
+import { RouterView } from 'vue-router';
 </script>
 
 <template>
-  <DMScreen />
+  <RouterView />
 </template>
-
-<style scoped>
-html,
-body,
-#app {
-  min-height: 100%;
-  margin: 0;
-  padding: 0;
-}
-</style>

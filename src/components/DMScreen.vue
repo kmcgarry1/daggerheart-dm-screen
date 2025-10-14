@@ -33,11 +33,14 @@
             :size-options="sizeOptions"
             :next-widget-size="nextWidgetSize"
             :next-widget-size-label="nextWidgetSizeLabel"
+            :widget-type-options="widgetTypeOptions"
+            :next-widget-type="nextWidgetType"
             :widgets="widgets"
             :active-widget-id="activeWidgetId"
             :background-count="backgroundImages.length"
             :has-backgrounds="hasBackgrounds"
             @update:size="handleSizeSelect"
+            @update:type="handleTypeSelect"
             @create:widget="addWidget"
             @clear-backgrounds="clearBackgrounds"
             @focus-widget="focusWidget"
@@ -54,6 +57,7 @@
           @toggle-edit="toggleEditing"
           @remove-widget="removeWidget"
           @update-widget="handleWidgetUpdate"
+          @update-countdown="handleCountdownUpdate"
           @toggle-collapsed="toggleWidgets"
         />
       </div>
@@ -76,6 +80,8 @@ import ScreenFloatingControls from './dm-screen/ScreenFloatingControls.vue'
 import ScreenSidebar from './dm-screen/ScreenSidebar.vue'
 import ScreenToolbar from './dm-screen/ScreenToolbar.vue'
 import ScreenWorkspace from './dm-screen/ScreenWorkspace.vue'
+import { createDefaultCountdownConfig, defaultDescription, defaultTitle } from './countdown/options'
+import type { CountdownConfig } from './countdown/types'
 
 type WidgetSize = 'small' | 'medium' | 'large'
 
@@ -85,12 +91,31 @@ type SizeOption = {
   columns: number
 }
 
-type DashboardWidget = {
+type NoteWidget = {
   id: string
   title: string
   body: string
   size: WidgetSize
   editing: boolean
+  type: 'note'
+}
+
+type CountdownWidget = {
+  id: string
+  title: string
+  description: string
+  size: WidgetSize
+  editing: boolean
+  type: 'countdown'
+  countdown: CountdownConfig
+}
+
+type DashboardWidget = NoteWidget | CountdownWidget
+
+type WidgetTypeOption = {
+  value: DashboardWidget['type']
+  label: string
+  description: string
 }
 
 type BackgroundSlide = {
@@ -121,6 +146,7 @@ const widgets = ref<DashboardWidget[]>([
     body: 'Key NPC motivations, surprises to reveal, and challenges to escalate.',
     size: 'medium',
     editing: false,
+    type: 'note',
   },
   {
     id: createId(),
@@ -128,13 +154,28 @@ const widgets = ref<DashboardWidget[]>([
     body: 'Pendry, Rowan, Syl, Maeve, Hunters x3',
     size: 'small',
     editing: false,
+    type: 'note',
   },
 ])
 
 const nextWidgetSize = ref<WidgetSize>('medium')
+const widgetTypeOptions: WidgetTypeOption[] = [
+  { value: 'note', label: 'Notes Card', description: 'Write reminders, NPC motives, or scene beats.' },
+  {
+    value: 'countdown',
+    label: 'Countdown Tracker',
+    description: 'Configurable step tracker with palette, icon, and pacing options.',
+  },
+]
+const nextWidgetType = ref<DashboardWidget['type']>('note')
 const activeWidgetId = ref<string | null>(null)
 const sidebarCollapsed = ref(false)
 const widgetsCollapsed = ref(false)
+
+const resolveCountdownTitle = (config: CountdownConfig) => config.title.trim() || defaultTitle
+
+const resolveCountdownDescription = (config: CountdownConfig) =>
+  config.description.trim() || defaultDescription
 
 const backgroundImages = ref<BackgroundSlide[]>([])
 const activeBackgroundIndex = ref(0)
@@ -235,20 +276,40 @@ const setFearLevel = (value: number) => {
 }
 
 const addWidget = () => {
-  const widget: DashboardWidget = {
-    id: createId(),
-    title: '',
-    body: '',
-    size: nextWidgetSize.value,
-    editing: true,
+  const type = nextWidgetType.value
+  let widget: DashboardWidget
+
+  if (type === 'countdown') {
+    const config = createDefaultCountdownConfig()
+    widget = {
+      id: createId(),
+      title: resolveCountdownTitle(config),
+      description: resolveCountdownDescription(config),
+      size: nextWidgetSize.value,
+      editing: true,
+      type: 'countdown',
+      countdown: config,
+    }
+  } else {
+    widget = {
+      id: createId(),
+      title: '',
+      body: '',
+      size: nextWidgetSize.value,
+      editing: true,
+      type: 'note',
+    }
   }
+
   widgets.value = [widget, ...widgets.value]
   activeWidgetId.value = widget.id
 
   nextTick(() => {
     if (typeof window === 'undefined') return
-    const firstInput = window.document.querySelector<HTMLInputElement>(`#${widget.id}-title`)
-    firstInput?.focus()
+    if (widget.type === 'note') {
+      const firstInput = window.document.querySelector<HTMLInputElement>(`#${widget.id}-title`)
+      firstInput?.focus()
+    }
   })
 }
 
@@ -260,8 +321,10 @@ const toggleEditing = (id: string) => {
   if (widget.editing) {
     nextTick(() => {
       if (typeof window === 'undefined') return
-      const input = window.document.querySelector<HTMLInputElement>(`#${id}-title`)
-      input?.focus()
+      if (widget.type === 'note') {
+        const input = window.document.querySelector<HTMLInputElement>(`#${id}-title`)
+        input?.focus()
+      }
     })
   }
 }
@@ -273,6 +336,7 @@ const handleWidgetUpdate = (payload: { id: string; key: 'title' | 'body' | 'size
     widget.size = payload.value as WidgetSize
     return
   }
+  if (widget.type !== 'note') return
   if (payload.key === 'title') {
     widget.title = payload.value
   } else {
@@ -296,8 +360,10 @@ const focusWidget = (id: string) => {
   }
   nextTick(() => {
     if (typeof window === 'undefined') return
-    const input = window.document.querySelector<HTMLInputElement>(`#${id}-title`)
-    input?.focus()
+    if (widget.type === 'note') {
+      const input = window.document.querySelector<HTMLInputElement>(`#${id}-title`)
+      input?.focus()
+    }
   })
 }
 
@@ -315,6 +381,20 @@ const toggleWidgets = () => {
 
 const handleSizeSelect = (size: WidgetSize) => {
   nextWidgetSize.value = size
+}
+
+const handleTypeSelect = (type: DashboardWidget['type']) => {
+  nextWidgetType.value = type
+}
+
+const handleCountdownUpdate = (
+  payload: { id: string; config: CountdownConfig; title: string; description: string },
+) => {
+  const widget = widgets.value.find((entry) => entry.id === payload.id)
+  if (!widget || widget.type !== 'countdown') return
+  widget.countdown = payload.config
+  widget.title = payload.title.trim() || defaultTitle
+  widget.description = payload.description.trim()
 }
 
 const sizeLabel = (size: WidgetSize) => {

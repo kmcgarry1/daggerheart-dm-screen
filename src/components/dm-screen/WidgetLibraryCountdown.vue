@@ -25,7 +25,7 @@
           :button-size-classes="selectedButtonSize.classes"
         />
         <p class="text-sm font-semibold text-[color:var(--dh-panel-muted)]" aria-live="polite">
-          {{ remainingSteps }} steps remaining · {{ elapsedSteps }} complete
+          {{ remainingSteps }} steps remaining - {{ elapsedSteps }} complete
         </p>
       </div>
 
@@ -34,28 +34,24 @@
           class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Title</span>
-          <select
-            v-model="selectedTitleId"
+          <input
+            v-model.trim="titleInput"
+            type="text"
+            placeholder="Countdown title"
             class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          >
-            <option v-for="option in titleOptions" :key="option.id" :value="option.id">
-              {{ option.label }}
-            </option>
-          </select>
+          />
         </label>
 
         <label
           class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Description</span>
-          <select
-            v-model="selectedDescriptionId"
+          <input
+            v-model.trim="descriptionInput"
+            type="text"
+            placeholder="Describe what the countdown tracks"
             class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          >
-            <option v-for="option in descriptionOptions" :key="option.id" :value="option.id">
-              {{ option.text }}
-            </option>
-          </select>
+          />
         </label>
       </div>
 
@@ -94,14 +90,14 @@
           class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Total Steps</span>
-          <select
-            v-model.number="selectedStepCount"
+          <input
+            :value="stepCount"
+            type="number"
+            :min="minSteps"
+            :max="maxSteps"
             class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          >
-            <option v-for="option in stepCountOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </option>
-          </select>
+            @input="handleStepInput(($event.target as HTMLInputElement).value)"
+          />
         </label>
 
         <label
@@ -163,120 +159,66 @@ import TrackerControl from '../tracker/TrackerControl.vue'
 import { trackerIconOptions, trackerPaletteOptions } from '../tracker/registry'
 import type { TrackerCardVariant, TrackerPalette } from '../tracker/types'
 
-type StepOption = {
-  value: number
-  label: string
-}
-
-type ButtonSizeOption = {
-  id: string
-  label: string
-  classes: string
-}
-
-type CardVariantOption = {
-  id: string
-  label: string
-  variant: TrackerCardVariant
-}
-
-type TitleOption = {
-  id: string
-  label: string
-}
-
-type DescriptionOption = {
-  id: string
-  text: string
-}
-
-const stepCountOptions: StepOption[] = [
-  { value: 4, label: '4 steps' },
-  { value: 6, label: '6 steps' },
-  { value: 8, label: '8 steps' },
-  { value: 10, label: '10 steps' },
-  { value: 12, label: '12 steps' },
-  { value: 20, label: '20 steps' },
-]
-
-const buttonSizeOptions: ButtonSizeOption[] = [
-  { id: 'compact', label: 'Compact', classes: 'h-[2.4rem] w-[2.4rem]' },
-  {
-    id: 'standard',
-    label: 'Standard',
-    classes: 'h-[clamp(2.8rem,_4vw,_3.4rem)] w-[clamp(2.8rem,_4vw,_3.4rem)]',
-  },
-  {
-    id: 'roomy',
-    label: 'Roomy',
-    classes: 'h-[clamp(3.2rem,_4.6vw,_3.8rem)] w-[clamp(3.2rem,_4.6vw,_3.8rem)]',
-  },
-]
-
-const cardVariantOptions: CardVariantOption[] = [
-  { id: 'square', label: 'Square', variant: { width: '100', height: '100' } },
-  { id: 'landscape', label: 'Landscape', variant: { width: '100', height: '50' } },
-  { id: 'portrait', label: 'Portrait', variant: { width: '50', height: '100' } },
-]
-
-const titleOptions: TitleOption[] = [
-  { id: 'ritual', label: 'Ritual Countdown' },
-  { id: 'doom', label: 'Doom Clock' },
-  { id: 'mission', label: 'Mission Timer' },
-]
-
-const descriptionOptions: DescriptionOption[] = [
-  { id: 'tense', text: 'Track how close you are to the moment of truth.' },
-  { id: 'ritual', text: 'Each step marks a ritual milestone on the path.' },
-  { id: 'battle', text: 'Keep tension high as the timer ticks toward disaster.' },
-]
+import {
+  MAX_COUNTDOWN_STEPS,
+  MIN_COUNTDOWN_STEPS,
+  buttonSizeOptions,
+  cardVariantOptions,
+  createDefaultCountdownConfig,
+  defaultDescription,
+  defaultTitle,
+  formatPaletteLabel,
+  formatProgressLabel,
+} from '../countdown/options'
 
 const paletteOptions = trackerPaletteOptions
 const iconOptions = trackerIconOptions
+const fallbackPalette = (paletteOptions[0]?.palette ?? trackerPaletteOptions[0]?.palette)!
+const fallbackIcon = (iconOptions[0]?.icon ?? trackerIconOptions[0]?.icon)!
+const fallbackButtonSize = buttonSizeOptions[0]!
+const fallbackCardVariant = cardVariantOptions[0]!
 
-const defaultPaletteId = paletteOptions[0]?.id ?? 'fear'
-const defaultIconId = iconOptions[0]?.id ?? 'skull'
+const baseConfig = createDefaultCountdownConfig()
 
-const selectedTitleId = ref(titleOptions[0]?.id ?? '')
-const selectedDescriptionId = ref(descriptionOptions[0]?.id ?? '')
-const selectedPaletteId = ref(defaultPaletteId)
-const selectedIconId = ref(defaultIconId)
-const selectedButtonSizeId = ref(buttonSizeOptions[1]?.id ?? buttonSizeOptions[0]?.id ?? 'standard')
-const selectedCardVariantId = ref(cardVariantOptions[0]?.id ?? 'square')
-const selectedStepCount = ref(stepCountOptions[3]?.value ?? 10)
-const elapsedSteps = ref(0)
+const titleInput = ref(baseConfig.title)
+const descriptionInput = ref(baseConfig.description)
+const selectedPaletteId = ref(baseConfig.paletteId)
+const selectedIconId = ref(baseConfig.iconId)
+const selectedButtonSizeId = ref(baseConfig.buttonSizeId)
+const selectedCardVariantId = ref(baseConfig.cardVariantId)
+const stepCount = ref(baseConfig.stepCount)
+const elapsedSteps = ref(baseConfig.progress)
 
-const totalSteps = computed(() => selectedStepCount.value)
+const maxSteps = MAX_COUNTDOWN_STEPS
+const minSteps = MIN_COUNTDOWN_STEPS
+
+const clampStepCount = (value: number) =>
+  Math.max(MIN_COUNTDOWN_STEPS, Math.min(MAX_COUNTDOWN_STEPS, Math.round(value || 0)))
+
+const totalSteps = computed(() => clampStepCount(stepCount.value))
 
 const selectedPalette = computed<TrackerPalette>(() => {
   const match = paletteOptions.find((option) => option.id === selectedPaletteId.value)
-  return match?.palette ?? paletteOptions[0]?.palette ?? trackerPaletteOptions[0].palette
+  return match?.palette ?? fallbackPalette
 })
 
 const selectedIcon = computed(() => {
   const match = iconOptions.find((option) => option.id === selectedIconId.value)
-  return match?.icon ?? iconOptions[0]?.icon
+  return match?.icon ?? fallbackIcon
 })
 
 const selectedButtonSize = computed(() => {
   const match = buttonSizeOptions.find((option) => option.id === selectedButtonSizeId.value)
-  return match ?? buttonSizeOptions[0]
+  return match ?? fallbackButtonSize
 })
 
 const selectedCardVariant = computed<TrackerCardVariant>(() => {
   const match = cardVariantOptions.find((option) => option.id === selectedCardVariantId.value)
-  return match?.variant ?? cardVariantOptions[0]?.variant ?? { width: '100', height: '100' }
+  return match?.variant ?? fallbackCardVariant.variant
 })
 
-const title = computed(() => {
-  const match = titleOptions.find((option) => option.id === selectedTitleId.value)
-  return match?.label ?? titleOptions[0]?.label ?? 'Countdown'
-})
-
-const description = computed(() => {
-  const match = descriptionOptions.find((option) => option.id === selectedDescriptionId.value)
-  return match?.text ?? descriptionOptions[0]?.text ?? ''
-})
+const title = computed(() => titleInput.value.trim() || defaultTitle)
+const description = computed(() => descriptionInput.value.trim() || defaultDescription)
 
 const trackerOptions = computed(() =>
   Array.from({ length: totalSteps.value }, (_, index) => {
@@ -297,17 +239,33 @@ const remainingSteps = computed(() => Math.max(totalSteps.value - elapsedSteps.v
 
 const trackLabel = computed(() => `${title.value} countdown buttons`)
 
+const handleStepInput = (value: string) => {
+  const parsed = Number(value)
+  if (Number.isNaN(parsed)) {
+    stepCount.value = MIN_COUNTDOWN_STEPS
+    return
+  }
+  stepCount.value = clampStepCount(parsed)
+}
+
+watch(stepCount, (next) => {
+  const clamped = clampStepCount(next)
+  if (clamped !== next) {
+    stepCount.value = clamped
+  }
+})
+
 watch(totalSteps, (next) => {
   if (elapsedSteps.value > next) {
     elapsedSteps.value = next
   }
 })
 
-const formatPaletteLabel = (id: string) => id.charAt(0).toUpperCase() + id.slice(1)
-
-const formatProgressLabel = (value: number, total: number) => {
-  if (value === 0) return '0 complete (fresh start)'
-  if (value === total) return `${value} complete (ready to trigger)`
-  return `${value} complete`
-}
+watch(elapsedSteps, (next) => {
+  if (Number.isNaN(next) || next < 0) {
+    elapsedSteps.value = 0
+  } else if (next > totalSteps.value) {
+    elapsedSteps.value = totalSteps.value
+  }
+})
 </script>

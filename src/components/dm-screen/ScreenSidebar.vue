@@ -8,7 +8,7 @@
         <h2 class="text-xl font-semibold">Create Dashboard Widget</h2>
       </header>
       <p class="text-sm text-[color:var(--dh-panel-muted)]">
-        Pick a size, then drop in a new card. Everything stays editable directly on the board.
+        Pick a size, choose a style, then drop in a new card. Everything stays editable directly on the board.
       </p>
       <div class="flex flex-col gap-3" role="tablist" aria-label="Widget size presets">
         <button
@@ -32,12 +32,29 @@
           </span>
         </button>
       </div>
+      <label
+        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+      >
+        <span>Widget Type</span>
+        <select
+          :value="nextWidgetType"
+          class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+          @change="$emit('update:type', ($event.target as HTMLSelectElement).value as WidgetType)"
+        >
+          <option v-for="option in widgetTypeOptions" :key="option.value" :value="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </label>
+      <p class="text-xs text-[color:var(--dh-panel-muted)]">
+        {{ selectedTypeOption?.description }}
+      </p>
       <button
         type="button"
         class="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 via-blue-500 to-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-xl transition hover:-translate-y-0.5 hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
         @click="$emit('create:widget')"
       >
-        + New {{ nextWidgetSizeLabel }} Widget
+        + New {{ nextWidgetSizeLabel }} {{ selectedTypeOption?.label ?? 'Widget' }}
       </button>
     </section>
 
@@ -101,7 +118,7 @@
                 class="block text-xs font-medium"
                 :class="widget.id === activeWidgetId ? 'opacity-80' : 'text-[color:var(--dh-panel-muted)]'"
               >
-                {{ sizeLabel(widget.size) }}
+                {{ sizeLabel(widget.size) }} · {{ typeLabel(widget.type) }}
               </span>
             </span>
             <span
@@ -124,7 +141,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, toRefs } from 'vue'
+import { computed, ref, toRefs } from 'vue'
 
 type WidgetSize = 'small' | 'medium' | 'large'
 
@@ -134,18 +151,40 @@ type SizeOption = {
   columns: number
 }
 
-type DashboardWidget = {
+type NoteWidget = {
   id: string
   title: string
   body: string
   size: WidgetSize
   editing: boolean
+  type: 'note'
+}
+
+type CountdownWidget = {
+  id: string
+  title: string
+  description: string
+  size: WidgetSize
+  editing: boolean
+  type: 'countdown'
+}
+
+type DashboardWidget = NoteWidget | CountdownWidget
+
+type WidgetType = DashboardWidget['type']
+
+type WidgetTypeOption = {
+  value: WidgetType
+  label: string
+  description: string
 }
 
 const props = defineProps<{
   sizeOptions: SizeOption[]
   nextWidgetSize: WidgetSize
   nextWidgetSizeLabel: string
+  widgetTypeOptions: WidgetTypeOption[]
+  nextWidgetType: WidgetType
   widgets: DashboardWidget[]
   activeWidgetId: string | null
   backgroundCount: number
@@ -154,6 +193,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:size', value: WidgetSize): void
+  (e: 'update:type', value: WidgetType): void
   (e: 'create:widget'): void
   (e: 'upload-backgrounds', files: File[]): void
   (e: 'clear-backgrounds'): void
@@ -162,8 +202,21 @@ const emit = defineEmits<{
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
-const { sizeOptions, nextWidgetSize, nextWidgetSizeLabel, widgets, activeWidgetId, backgroundCount, hasBackgrounds } =
-  toRefs(props)
+const {
+  sizeOptions,
+  nextWidgetSize,
+  nextWidgetSizeLabel,
+  widgetTypeOptions,
+  nextWidgetType,
+  widgets,
+  activeWidgetId,
+  backgroundCount,
+  hasBackgrounds,
+} = toRefs(props)
+
+const selectedTypeOption = computed(() =>
+  widgetTypeOptions.value.find((option) => option.value === nextWidgetType.value),
+)
 
 const triggerUpload = () => {
   fileInputRef.value?.click()
@@ -180,5 +233,10 @@ const onBackgroundInput = (event: Event) => {
 const sizeLabel = (size: WidgetSize) => {
   const option = sizeOptions.value.find((entry) => entry.value === size)
   return option ? option.label : size
+}
+
+const typeLabel = (type: WidgetType) => {
+  const option = widgetTypeOptions.value.find((entry) => entry.value === type)
+  return option ? option.label : type
 }
 </script>

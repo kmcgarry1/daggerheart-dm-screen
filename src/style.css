@@ -17,7 +17,7 @@
 
     --dh-backdrop: radial-gradient(circle at top left, rgba(255, 255, 255, 0.01), rgba(233, 240, 255, 0.1)),
         radial-gradient(circle at bottom right, rgba(192, 218, 255, 0.01), rgba(240, 245, 255, 0.2));
-    --dh-panel-bg: rgba(255, 255, 255, 0.72);
+    --dh-panel-bg: rgba(255, 255, 255, 0.52);
     --dh-panel-border: rgba(255, 255, 255, 0.6);
     --dh-panel-text: rgba(20, 31, 52, 0.9);
     --dh-panel-muted: rgba(62, 73, 112, 0.65);
@@ -59,7 +59,7 @@
 
     --dh-backdrop: radial-gradient(circle at top left, rgba(20, 28, 45, 0.01), rgba(13, 18, 32, 0.1)),
         radial-gradient(circle at bottom right, rgba(34, 41, 66, 0.1), rgba(11, 17, 31, 0.2));
-    --dh-panel-bg: rgba(17, 23, 41, 0.82);
+    --dh-panel-bg: rgba(17, 23, 41, 0.52);
     --dh-panel-border: rgba(116, 132, 184, 0.34);
     --dh-panel-text: rgba(232, 238, 255, 0.94);
     --dh-panel-muted: rgba(167, 181, 219, 0.65);

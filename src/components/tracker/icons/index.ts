@@ -1,3 +1,8 @@
 export { default as SkullIcon } from './SkullIcon.vue'
 export { default as FlameIcon } from './FlameIcon.vue'
 export { default as GemIcon } from './GemIcon.vue'
+export { default as HourglassIcon } from './HourglassIcon.vue'
+export { default as BellIcon } from './BellIcon.vue'
+export { default as BoltIcon } from './BoltIcon.vue'
+export { default as StarIcon } from './StarIcon.vue'
+export { default as ClockIcon } from './ClockIcon.vue'

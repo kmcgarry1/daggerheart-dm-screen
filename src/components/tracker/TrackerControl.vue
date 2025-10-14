@@ -1,12 +1,20 @@
 <template>
-  <DhCard :width-variant="cardVariant.width" :height-variant="cardVariant.height">
+  <DhCard
+    v-if="standaloneCard"
+    v-bind="attrs"
+    :width-variant="cardVariant.width"
+    :height-variant="cardVariant.height"
+  >
     <template v-if="title" #title>
       {{ title }}
     </template>
 
     <template #body>
       <div class="flex flex-col gap-3">
-        <p v-if="description" class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <p
+          v-if="description"
+          class="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        >
           {{ description }}
         </p>
 
@@ -47,7 +55,7 @@
               :key="option.value"
               :active="isActive(option)"
               :burst="burstIndex === option.value"
-              :palette="optionPalettes[index]"
+              :palette="paletteAt(index)"
               :burst-gradient="burstGradient"
               :size-classes="buttonSizeClasses"
               @activate="handleClick(option)"
@@ -67,10 +75,76 @@
       </div>
     </template>
   </DhCard>
+  <div v-else v-bind="attrs" class="flex flex-col gap-3">
+    <p
+      v-if="description"
+      class="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+    >
+      {{ description }}
+    </p>
+    <div class="relative px-1 pt-5 pb-1.5 md:px-2 md:pt-4 md:pb-2">
+      <div
+        ref="progressTrackRef"
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-x-0 top-1/2 h-[0.6rem] -translate-y-1/2 transform overflow-hidden rounded-full transition-colors duration-300"
+        :style="{
+          background: palette.rail,
+        }"
+      >
+        <div
+          class="absolute left-0 top-0 h-full rounded-full transition-[width] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+          :style="{
+            width: progressWidth,
+            background: palette.fill,
+            boxShadow: `0 0 30px ${palette.glow}`,
+          }"
+        ></div>
+        <div
+          class="pointer-events-none absolute left-0 -top-[40%] h-[180%] rounded-full blur-[26px] transition-[width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+          :style="{
+            width: progressWidth,
+            background: `radial-gradient(circle, ${palette.glow} 0%, rgba(0, 0, 0, 0) 70%)`,
+          }"
+        ></div>
+      </div>
+
+      <div
+        ref="buttonRowRef"
+        class="relative z-[1] flex flex-nowrap justify-start gap-[0.5rem] overflow-x-auto px-1 py-1.5 md:justify-between md:gap-[clamp(0.4rem,_0.9vw,_0.7rem)] md:px-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        role="group"
+        :aria-label="trackLabel"
+      >
+        <TrackerOptionButton
+          v-for="(option, index) in options"
+          :key="option.value"
+          :active="isActive(option)"
+          :burst="burstIndex === option.value"
+          :palette="paletteAt(index)"
+          :burst-gradient="burstGradient"
+          :size-classes="buttonSizeClasses"
+          @activate="handleClick(option)"
+          :aria-pressed="isActive(option)"
+          :aria-label="option.label"
+          :data-tracker-option="index"
+        >
+          <component
+            :is="option.icon"
+            class="h-[clamp(1.2rem,_2.4vw,_1.6rem)] w-[clamp(1.2rem,_2.4vw,_1.6rem)] transition-transform duration-200 ease-out"
+            :class="{ '-translate-y-px': isActive(option) }"
+            v-bind="option.iconProps"
+          />
+        </TrackerOptionButton>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, watch } from 'vue'
+
+defineOptions({
+  inheritAttrs: false,
+})
 
 import DhCard from '../core/DhCard.vue'
 import TrackerOptionButton from './TrackerOptionButton.vue'
@@ -91,6 +165,7 @@ const props = withDefaults(
     trackLabel?: string
     cardVariant?: TrackerCardVariant
     buttonSizeClasses?: string
+    standaloneCard?: boolean
   }>(),
   {
     title: undefined,
@@ -101,6 +176,7 @@ const props = withDefaults(
       height: '100',
     }),
     buttonSizeClasses: 'h-[clamp(2.8rem,_4vw,_3.4rem)] w-[clamp(2.8rem,_4vw,_3.4rem)]',
+    standaloneCard: true,
   },
 )
 
@@ -108,6 +184,8 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: number): void
   (e: 'change', value: number): void
 }>()
+
+const attrs = useAttrs()
 
 const burstIndex = ref<number | null>(null)
 let burstTimer: number | null = null
@@ -150,6 +228,8 @@ const mergePalette = (
 const optionPalettes = computed(() =>
   props.options.map((option) => mergePalette(props.palette.button, option.paletteOverride)),
 )
+
+const paletteAt = (index: number) => optionPalettes.value[index] ?? props.palette.button
 
 const isActive = (option: TrackerOption) => option.value <= props.modelValue
 
