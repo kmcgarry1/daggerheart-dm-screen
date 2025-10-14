@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+:root{
+    --dh-bg: #0b0f12;
+    --dh-surface: #0f1720;
+    --dh-primary: #b71c2b;
+    --dh-primary-600: #8f1622;
+    --dh-accent: #f8b84c;
+    --dh-accent-600: #d99a3b;
+    --dh-emerald: #2f6f4e;
+    --dh-silver: #cfd8dc;
+    --dh-ivory: #efe8d6;
+    --dh-muted: #9aa5ad;
+    --dh-highlight: #b2e7ff;
+    --dh-danger: #8b0f14;
+}
+
+@layer base {
+    html, body {
+        background-color: var(--dh-bg);
+        color: var(--dh-ivory);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    a { color: var(--dh-accent); text-decoration: underline; }
+    hr { border-color: rgba(207,216,220,0.08); }
+    code, kbd, pre, samp { background: rgba(207,216,220,0.03); color: var(--dh-silver); }
+}
+
+@layer utilities {
+    .bg-dh-primary { background-color: var(--dh-primary) !important; color: var(--dh-ivory) !important; }
+    .text-dh-primary { color: var(--dh-primary) !important; }
+    .border-dh-primary { border-color: var(--dh-primary) !important; }
+
+    .bg-dh-accent { background-color: var(--dh-accent) !important; color: #111827 !important; }
+    .text-dh-accent { color: var(--dh-accent) !important; }
+    .border-dh-accent { border-color: var(--dh-accent) !important; }
+
+    .bg-dh-surface { background-color: var(--dh-surface) !important; color: var(--dh-ivory) !important; }
+    .text-dh-muted { color: var(--dh-muted) !important; }
+    .border-dh-muted { border-color: var(--dh-muted) !important; }
+
+    .text-dh-emerald { color: var(--dh-emerald) !important; }
+    .text-dh-silver { color: var(--dh-silver) !important; }
+    .text-dh-highlight { color: var(--dh-highlight) !important; }
+    .text-dh-danger { color: var(--dh-danger) !important; }
+
+    .btn-dh {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        padding: .5rem .9rem;
+        background: var(--dh-primary);
+        color: var(--dh-ivory);
+        border-radius: .35rem;
+        border: 1px solid rgba(0,0,0,0.18);
+        transition: background-color .12s ease, transform .06s ease;
+    }
+    .btn-dh:hover { background: var(--dh-primary-600); transform: translateY(-1px); }
+    .btn-dh-accent {
+        background: var(--dh-accent);
+        color: #0b0f12;
+    }
+    .card-dh {
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+        border: 1px solid rgba(207,216,220,0.06);
+        color: var(--dh-ivory);
+        padding: 1rem;
+        border-radius: .5rem;
+        box-shadow: 0 6px 24px rgba(2,6,23,0.6);
+    }
+
+    .ring-dh-primary { box-shadow: 0 0 0 3px rgba(183,28,43,0.12); }
+    .ring-dh-accent  { box-shadow: 0 0 0 3px rgba(248,184,76,0.12); }
+}
