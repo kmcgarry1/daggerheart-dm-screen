@@ -7,17 +7,11 @@ import DMScreen from './components/DMScreen.vue';
 </template>
 
 <style scoped>
-html, body, #app {
-  height: 100%;
+html,
+body,
+#app {
+  min-height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
 }
-
-:deep(.dm-screen-root) {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
-
 </style>
