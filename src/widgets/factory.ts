@@ -41,7 +41,7 @@ const createCountdownWidget = (size: WidgetSize): DashboardWidget => {
   }
 }
 
-const defaultConditionsDescription =
+export const defaultConditionsDescription =
   'Use this space to spotlight the ongoing effects of battle conditions, curses, or boons so the table stays aligned.'
 const defaultConditionsAccent = '#a855f7'
 
