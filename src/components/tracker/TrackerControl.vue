@@ -2,8 +2,8 @@
   <DhCard
     v-if="standaloneCard"
     v-bind="attrs"
-    :width-variant="cardVariant.width"
-    :height-variant="cardVariant.height"
+    :width-variant="cardVariantComputed.width"
+    :height-variant="cardVariantComputed.height"
   >
     <template v-if="title" #title>
       <span class="tracker-heading">
@@ -163,20 +163,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useAttrs, watch } from 'vue'
+import { computed, useAttrs } from 'vue'
+
+import DhCard from '../core/DhCard.vue'
+import TrackerControlCore from './TrackerControlCore.vue'
+import type { TrackerCardVariant, TrackerOption, TrackerPalette } from './types'
 
 defineOptions({
   inheritAttrs: false,
 })
-
-import DhCard from '../core/DhCard.vue'
-import TrackerOptionButton from './TrackerOptionButton.vue'
-import type {
-  TrackerCardVariant,
-  TrackerOption,
-  TrackerPalette,
-  TrackerButtonPalette,
-} from './types'
 
 const props = withDefaults(
   defineProps<{
@@ -203,10 +198,7 @@ const props = withDefaults(
   },
 )
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: number): void
-  (e: 'change', value: number): void
-}>()
+const emit = defineEmits<{ (e: 'update:modelValue', value: number): void; (e: 'change', value: number): void }>()
 
 const attrs = useAttrs()
 
@@ -256,17 +248,17 @@ const optionPalettes = computed(() =>
 
 const paletteAt = (index: number) => optionPalettes.value[index] ?? props.palette.button
 
-const isActive = (option: TrackerOption) => option.value <= props.modelValue
+const coreBindings = computed(() => ({
+  modelValue: props.modelValue,
+  options: props.options,
+  palette: props.palette,
+  description: props.description,
+  trackLabel: props.trackLabel,
+  buttonSizeClasses: props.buttonSizeClasses,
+}))
 
-const handleClick = (option: TrackerOption) => {
-  const level = option.value
-  if (level === props.modelValue && props.modelValue > 0) {
-    emit('update:modelValue', level - 1)
-    emit('change', level - 1)
-    return
-  }
-  emit('update:modelValue', level)
-  emit('change', level)
+const onUpdate = (value: number) => {
+  emit('update:modelValue', value)
 }
 
 const updateProgressWidth = () => {
@@ -320,56 +312,6 @@ const updateProgressWidth = () => {
 
   progressWidth.value = `${progress}px`
 }
-
-watch(
-  () => props.modelValue,
-  (next, prev = 0) => {
-    if (typeof window === 'undefined') return
-    if (next > prev) {
-      const clamped = Math.min(next, totalSteps.value)
-      burstIndex.value =
-        clamped > 0 ? props.options[clamped - 1]?.value ?? null : null
-      if (burstTimer !== null) {
-        window.clearTimeout(burstTimer)
-      }
-      burstTimer = window.setTimeout(() => {
-        burstIndex.value = null
-        burstTimer = null
-      }, 450)
-    } else {
-      burstIndex.value = null
-      if (burstTimer !== null) {
-        window.clearTimeout(burstTimer)
-        burstTimer = null
-      }
-    }
-    void nextTick(updateProgressWidth)
-  },
-)
-
-onMounted(() => {
-  void nextTick(updateProgressWidth)
-  if (typeof window !== 'undefined') {
-    window.addEventListener('resize', updateProgressWidth)
-  }
-})
-
-onBeforeUnmount(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('resize', updateProgressWidth)
-  }
-  if (burstTimer !== null && typeof window !== 'undefined') {
-    window.clearTimeout(burstTimer)
-    burstTimer = null
-  }
-})
-
-watch(
-  () => props.options.length,
-  () => {
-    void nextTick(updateProgressWidth)
-  },
-)
 </script>
 
 <style scoped>
