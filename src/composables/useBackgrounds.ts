@@ -1,4 +1,5 @@
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { load, save } from '../utils/storage'
 
 export type BackgroundSlide = { id: string; url: string }
 export type BackgroundLayer = { id: string; url: string }
@@ -13,8 +14,8 @@ const createBackgroundId = () => {
 }
 
 export function useBackgrounds() {
-  const backgroundImages = ref<BackgroundSlide[]>([])
-  const activeBackgroundIndex = ref(0)
+  const backgroundImages = ref<BackgroundSlide[]>(load<BackgroundSlide[]>('backgroundImages', []))
+  const activeBackgroundIndex = ref(load<number>('activeBackgroundIndex', 0))
   const backgroundLayers = ref<BackgroundLayer[]>([])
 
   const baseGradient = computed(() => 'var(--dh-backdrop)')
@@ -97,6 +98,9 @@ export function useBackgrounds() {
     },
   )
 
+  watch(backgroundImages, (v) => save('backgroundImages', v), { deep: true })
+  watch(activeBackgroundIndex, (v) => save('activeBackgroundIndex', v))
+
   watch(
     currentSlide,
     (next) => {
@@ -155,4 +159,3 @@ export function useBackgrounds() {
     clearBackgrounds,
   }
 }
-

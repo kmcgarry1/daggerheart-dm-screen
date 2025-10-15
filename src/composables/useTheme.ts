@@ -1,7 +1,8 @@
 import { ref, watch } from 'vue'
+import { load, save } from '../utils/storage'
 
 export function useTheme() {
-  const darkMode = ref(false)
+  const darkMode = ref(load<boolean>('darkMode', false))
 
   const applyTheme = () => {
     if (typeof document === 'undefined') return
@@ -12,8 +13,10 @@ export function useTheme() {
     darkMode.value = !darkMode.value
   }
 
-  watch(darkMode, applyTheme, { immediate: true })
+  watch(darkMode, (v) => {
+    save('darkMode', v)
+    applyTheme()
+  }, { immediate: true })
 
   return { darkMode, toggleDarkMode, applyTheme }
 }
-

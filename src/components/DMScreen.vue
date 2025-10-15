@@ -81,7 +81,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import ScreenBackground from './dm-screen/ScreenBackground.vue'
 import ScreenFloatingControls from './dm-screen/ScreenFloatingControls.vue'
@@ -94,6 +94,7 @@ import { useFear } from '../composables/useFear'
 import { useBackgrounds } from '../composables/useBackgrounds'
 import { useWidgets } from '../composables/useWidgets'
 import { computeYouTubeEmbed } from '../utils/embeds'
+import { load, save } from '../utils/storage'
 
 const { darkMode, toggleDarkMode: toggleTheme, applyTheme } = useTheme()
 const { fearLevel, setFearLevel } = useFear()
@@ -133,8 +134,8 @@ const {
   countdownDockLabel,
 } = useWidgets()
 
-const sidebarCollapsed = ref(false)
-const widgetsCollapsed = ref(false)
+const sidebarCollapsed = ref(load<boolean>('sidebarCollapsed', false))
+const widgetsCollapsed = ref(load<boolean>('widgetsCollapsed', false))
 
 const toggleDarkMode = () => toggleTheme()
 
@@ -145,6 +146,9 @@ const toggleSidebar = () => {
 const toggleWidgets = () => {
   widgetsCollapsed.value = !widgetsCollapsed.value
 }
+
+watch(sidebarCollapsed, (v) => save('sidebarCollapsed', v))
+watch(widgetsCollapsed, (v) => save('widgetsCollapsed', v))
 
 const youtubeBackgroundSrc = computed(() => {
   const yt = widgets.value.find((w) => (w as any).type === 'youtube' && (w as any).background && (w as any).url)
