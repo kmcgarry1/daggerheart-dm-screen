@@ -170,7 +170,7 @@ export const techPalette: TrackerPalette = {
   ),
 }
 
-export const dangerPalette: TrackerPalette = {  
+export const dangerPalette: TrackerPalette = {
   rail: 'rgba(200, 50, 50, 0.3)',
   fill: 'linear-gradient(135deg, rgba(180, 30, 30, 0.9), rgba(220, 70, 70, 0.85))',     
   glow: 'rgba(200, 50, 50, 0.35)',
