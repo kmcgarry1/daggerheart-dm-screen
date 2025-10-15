@@ -185,18 +185,6 @@
           </template>
         </dh-card>
       </div>
-      <div
-        v-else
-        key="workspace-collapsed"
-        class="dh-glass flex min-h-[280px] flex-col items-center justify-center gap-4 p-6 text-center"
-      >
-        <p class="text-sm text-[color:var(--dh-panel-muted)]">
-          Widgets are hidden. Bring them back whenever you need them.
-        </p>
-        <button type="button" class="dh-toggle" @click="$emit('toggle-collapsed')">
-          Show Widgets
-        </button>
-      </div>
     </Transition>
   </section>
 </template>

@@ -1,4 +1,5 @@
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import { load, save } from '../utils/storage'
 import { createDefaultCountdownConfig, defaultDescription, defaultTitle } from '../components/countdown/options'
 import type { CountdownConfig } from '../components/countdown/types'
 
@@ -79,7 +80,7 @@ export function useWidgets() {
     { value: 'spotify', label: 'Spotify Embed', description: 'Embed a Spotify track, album, or playlist.' },
   ]
 
-  const widgets = ref<DashboardWidget[]>([
+  const widgets = ref<DashboardWidget[]>(load<DashboardWidget[]>('widgets', [
     {
       id: createId(),
       title: 'Session Beats',
@@ -98,7 +99,7 @@ export function useWidgets() {
       type: 'note',
       hidden: false,
     },
-  ])
+  ]))
 
   const nextWidgetSize = ref<WidgetSize>('medium')
   const nextWidgetType = ref<DashboardWidget['type']>('note')
@@ -197,6 +198,9 @@ export function useWidgets() {
       })
     }
   }
+
+  // Persist widgets state
+  watch(widgets, (v) => save('widgets', v), { deep: true })
 
   const handleWidgetUpdate = (payload: {
     id: string
@@ -350,4 +354,3 @@ export function useWidgets() {
     countdownDockLabel,
   }
 }
-

@@ -116,11 +116,151 @@ export const cyberpunkPalette: TrackerPalette = {
   ),
 }
 
+export const naturePalette: TrackerPalette = {
+  rail: 'rgba(100, 200, 100, 0.3)',
+  fill: 'linear-gradient(135deg, rgba(80, 180, 80, 0.9), rgba(120, 220, 120, 0.85))',
+  glow: 'rgba(100, 200, 100, 0.35)',
+  burst: 'rgba(120, 220, 120, 0.55)',
+  button: createButtonPalette(
+    {
+      background: 'rgba(240, 255, 240, 0.94)',
+      border: 'rgba(100, 200, 100, 0.32)',
+      color: 'rgba(50, 150, 50, 0.65)',
+      hoverBorder: 'rgba(120, 220, 120, 0.55)',
+      hoverShadow: '0 20px 34px rgba(100, 200, 100, 0.26)',
+      shadow: undefined,
+      iconAccent: 'rgba(50, 150, 50, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.85)',
+    },
+    {
+      background: 'linear-gradient(135deg, rgba(50, 150, 50, 0.95), rgba(100, 200, 100, 0.92))',
+      border: 'rgba(120, 220, 120, 0.85)',
+      color: 'rgba(255, 255, 255, 0.94)',
+      shadow: '0 22px 38px rgba(100, 200, 100, 0.26)',
+      iconAccent: 'rgba(50, 150, 50, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.94)',
+    },
+  ),
+}
+
+export const techPalette: TrackerPalette = {
+  rail: 'rgba(100, 100, 200, 0.3)',
+  fill: 'linear-gradient(135deg, rgba(80, 80, 180, 0.9), rgba(120, 120, 220, 0.85))',
+  glow: 'rgba(100, 100, 200, 0.35)',
+  burst: 'rgba(120, 120, 220, 0.55)',
+  button: createButtonPalette(
+    {
+      background: 'rgba(240, 240, 255, 0.94)',
+      border: 'rgba(100, 100, 200, 0.32)',
+      color: 'rgba(50, 50, 150, 0.65)',
+      hoverBorder: 'rgba(120, 120, 220, 0.55)',
+      hoverShadow: '0 20px 34px rgba(100, 100, 200, 0.26)',
+      shadow: undefined,
+      iconAccent: 'rgba(50, 50, 150, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.85)',
+    },
+    {
+      background: 'linear-gradient(135deg, rgba(50, 50, 150, 0.95), rgba(100, 100, 200, 0.92))',
+      border: 'rgba(120, 120, 220, 0.85)',
+      color: 'rgba(255, 255, 255, 0.94)',
+      shadow: '0 22px 38px rgba(100, 100, 200, 0.26)',
+      iconAccent: 'rgba(50, 50, 150, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.94)',
+    },
+  ),
+}
+
+export const dangerPalette: TrackerPalette = {
+  rail: 'rgba(200, 50, 50, 0.3)',
+  fill: 'linear-gradient(135deg, rgba(180, 30, 30, 0.9), rgba(220, 70, 70, 0.85))',     
+  glow: 'rgba(200, 50, 50, 0.35)',
+  burst: 'rgba(220, 70, 70, 0.55)',
+  button: createButtonPalette(
+    {
+      background: 'rgba(255, 240, 240, 0.94)',
+      border: 'rgba(200, 50, 50, 0.32)',
+      color: 'rgba(150, 20, 20, 0.65)',
+      hoverBorder: 'rgba(220, 70, 70, 0.55)',
+      hoverShadow: '0 20px 34px rgba(200, 50, 50, 0.26)',
+      shadow: undefined,
+      iconAccent: 'rgba(150, 20, 20, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.85)',
+    },
+    {
+      background: 'linear-gradient(135deg, rgba(150, 20, 20, 0.95), rgba(200, 50, 50, 0.92))',
+      border: 'rgba(220, 70, 70, 0.85)',
+      color: 'rgba(255, 255, 255, 0.94)',
+      shadow: '0 22px 38px rgba(200, 50, 50, 0.26)',
+      iconAccent: 'rgba(150, 20, 20, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.94)',
+    },
+  ),
+}
+
+export const corruptionPalette: TrackerPalette = {
+  rail: 'rgba(150, 0, 150, 0.3)',
+  fill: 'linear-gradient(135deg, rgba(130, 0, 130, 0.9), rgba(170, 0, 170, 0.85))',     
+  glow: 'rgba(150, 0, 150, 0.35)',
+  burst: 'rgba(170, 0, 170, 0.55)',
+  button: createButtonPalette(
+    {
+      background: 'rgba(255, 240, 255, 0.94)',
+      border: 'rgba(150, 0, 150, 0.32)',
+      color: 'rgba(100, 0, 100, 0.65)',
+      hoverBorder: 'rgba(170, 0, 170, 0.55)',
+      hoverShadow: '0 20px 34px rgba(150, 0, 150, 0.26)',
+      shadow: undefined,
+      iconAccent: 'rgba(100, 0, 100, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.85)',
+    },
+    {
+      background: 'linear-gradient(135deg, rgba(100, 0, 100, 0.95), rgba(150, 0, 150, 0.92))',
+      border: 'rgba(170, 0, 170, 0.85)',
+      color: 'rgba(255, 255, 255, 0.94)',
+      shadow: '0 22px 38px rgba(150, 0, 150, 0.26)',
+      iconAccent: 'rgba(100, 0, 100, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.94)',
+    },
+  ),
+}
+
+export const highContrastPalette: TrackerPalette = {
+  rail: 'rgba(0, 0, 0, 0.3)',
+  fill: 'linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(255, 255, 255, 0.85))',
+  glow: 'rgba(0, 0, 0, 0.35)',
+  burst: 'rgba(0, 0, 0, 0.55)',
+  button: createButtonPalette(
+    {
+      background: 'rgba(255, 255, 255, 0.94)',
+      border: 'rgba(0, 0, 0, 0.32)',
+      color: 'rgba(0, 0, 0, 0.65)',
+      hoverBorder: 'rgba(0, 0, 0, 0.55)',
+      hoverShadow: '0 20px 34px rgba(0, 0, 0, 0.26)',
+      shadow: undefined,
+      iconAccent: 'rgba(0, 0, 0, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.85)',
+    },
+    {
+      background: 'linear-gradient(135deg, rgba(50, 50, 50, 0.95), rgba(200, 200, 200, 0.92))',
+      border: 'rgba(0, 0, 0, 0.85)',
+      color: 'rgba(255, 255, 255, 0.94)',
+      shadow: '0 22px 38px rgba(0, 0, 0, 0.26)',
+      iconAccent: 'rgba(0, 0, 0, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.94)',
+    },
+  ),
+}
+
 export const trackerPalettes = {
   fear: fearPalette,
   ember: emberPalette,
   tide: tidePalette,
   cyberpunk: cyberpunkPalette,
+  nature: naturePalette,
+  tech: techPalette,
+  danger: dangerPalette,
+  corruption: corruptionPalette,
+  highContrast: highContrastPalette,
 }
 
 export type TrackerPaletteName = keyof typeof trackerPalettes
