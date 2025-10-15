@@ -41,44 +41,7 @@
                 {{ widget.title || (widget.type === 'countdown' ? 'Countdown' : 'Untitled Widget') }}
               </span>
               <div class="flex items-center gap-2">
-                <button
-                  v-if="!widget.hidden"
-                  type="button"
-                  class="dh-toggle px-2 py-1 text-xs"
-                  @click="updateWidget(widget.id, 'hidden', true)"
-                  aria-label="Minimize widget"
-                  title="Minimize"
-                >
-                  —
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="dh-toggle px-2 py-1 text-xs"
-                  @click="updateWidget(widget.id, 'hidden', false)"
-                  aria-label="Restore widget"
-                  title="Restore"
-                >
-                  ◼
-                </button>
-                <button
-                  v-if="!widget.hidden"
-                  type="button"
-                  class="dh-toggle px-3 py-2"
-                  @click="updateWidget(widget.id, 'hidden', true)"
-                  aria-label="Minimize widget"
-                >
-                  Minimize
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="dh-toggle px-3 py-2"
-                  @click="updateWidget(widget.id, 'hidden', false)"
-                  aria-label="Restore widget"
-                >
-                  Restore
-                </button>
+                
                 <select
                   v-if="widget.editing"
                   :value="widget.size"
@@ -108,6 +71,26 @@
                   aria-label="Delete widget"
                 >
                   Delete
+                </button>
+                <button
+                  v-if="!widget.hidden"
+                  type="button"
+                  class="dh-toggle px-2 py-1 text-xs"
+                  @click="updateWidget(widget.id, 'hidden', true)"
+                  aria-label="Minimize widget"
+                  title="Minimize"
+                >
+                  —
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  class="dh-toggle px-2 py-1 text-xs"
+                  @click="updateWidget(widget.id, 'hidden', false)"
+                  aria-label="Restore widget"
+                  title="Restore"
+                >
+                  ◼
                 </button>
               </div>
             </div>
@@ -284,7 +267,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'toggle-edit', id: string): void
   (e: 'remove-widget', id: string): void
-  (e: 'update-widget', payload: { id: string; key: 'title' | 'body' | 'size' | 'url' | 'background'; value: string | boolean }): void
+  (e: 'update-widget', payload: { id: string; key: 'title' | 'body' | 'size' | 'url' | 'background' | 'hidden'; value: string | boolean }): void
   (
     e: 'update-countdown',
     payload: { id: string; config: CountdownConfig; title: string; description: string },
