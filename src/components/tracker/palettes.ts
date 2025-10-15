@@ -143,7 +143,7 @@ export const naturePalette: TrackerPalette = {
   ),
 }
 
-export const techPalette: TrackerPalette = {  
+export const techPalette: TrackerPalette = {
   rail: 'rgba(100, 100, 200, 0.3)',
   fill: 'linear-gradient(135deg, rgba(80, 80, 180, 0.9), rgba(120, 120, 220, 0.85))',
   glow: 'rgba(100, 100, 200, 0.35)',
