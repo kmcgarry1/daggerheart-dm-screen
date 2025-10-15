@@ -47,7 +47,7 @@
         >
           <span>Description</span>
           <input
-            v-model="descriptionInput"
+            v-model.trim="descriptionInput"
             type="text"
             placeholder="Describe what the countdown tracks"
             class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
