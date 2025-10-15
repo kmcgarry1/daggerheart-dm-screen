@@ -197,7 +197,7 @@ export const dangerPalette: TrackerPalette = {
   ),
 }
 
-export const corruptionPalette: TrackerPalette = {  
+export const corruptionPalette: TrackerPalette = {
   rail: 'rgba(150, 0, 150, 0.3)',
   fill: 'linear-gradient(135deg, rgba(130, 0, 130, 0.9), rgba(170, 0, 170, 0.85))',     
   glow: 'rgba(150, 0, 150, 0.35)',
