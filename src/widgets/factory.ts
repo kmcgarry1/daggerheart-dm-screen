@@ -10,8 +10,9 @@ import type { CountdownConfig } from '../components/countdown/types'
 
 let widgetCounter = 0
 const createId = () => {
-  if (typeof crypto !== 'undefined' && typeof (crypto as any).randomUUID === 'function') {
-    return `widget-${(crypto as any).randomUUID()}`
+  const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined
+  if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+    return `widget-${cryptoApi.randomUUID()}`
   }
   widgetCounter += 1
   return `widget-${Date.now()}-${widgetCounter}`

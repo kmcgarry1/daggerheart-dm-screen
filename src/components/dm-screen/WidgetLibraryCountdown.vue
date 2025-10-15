@@ -154,8 +154,6 @@ import { computed, ref } from 'vue'
 
 import TrackerControl from '../tracker/TrackerControl.vue'
 import TrackerIconPicker from '../tracker/TrackerIconPicker.vue'
-import type { TrackerCardVariant, TrackerPalette } from '../tracker/types'
-
 import CountdownStatusLine from '../countdown/CountdownStatusLine.vue'
 import {
   MAX_COUNTDOWN_STEPS,

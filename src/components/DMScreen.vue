@@ -1,5 +1,8 @@
 <template>
-  <div class="relative min-h-screen overflow-hidden text-[color:var(--dh-panel-text)] transition-colors duration-500" :style="screenStyle">
+  <div
+    class="dh-ambient relative min-h-screen overflow-hidden text-[color:var(--dh-panel-text)] transition-colors duration-500"
+    :style="screenStyle"
+  >
     <ScreenBackground :layers="backgroundLayers" :base-gradient="baseGradient" />
     <ScreenVideoBackground :src="youtubeBackgroundSrc" :muted="true" />
 
@@ -104,15 +107,14 @@ import { useBackgrounds } from '../composables/useBackgrounds'
 import { useWidgets } from '../composables/useWidgets'
 import { computeYouTubeEmbed } from '../utils/embeds'
 import { load, save } from '../utils/storage'
+import type { DashboardWidget, YoutubeWidget } from '../widgets/types'
 
-const { darkMode, toggleDarkMode: toggleTheme, applyTheme } = useTheme()
+const { darkMode, toggleDarkMode: toggleTheme } = useTheme()
 const { fearLevel, setFearLevel } = useFear()
 const {
   backgroundImages,
-  activeBackgroundIndex,
   backgroundLayers,
   baseGradient,
-  currentSlide,
   screenStyle,
   hasBackgrounds,
   handleBackgroundUpload,
@@ -159,10 +161,13 @@ const toggleWidgets = () => {
 watch(sidebarCollapsed, (v) => save('sidebarCollapsed', v))
 watch(widgetsCollapsed, (v) => save('widgetsCollapsed', v))
 
+const isYoutubeBackgroundWidget = (widget: DashboardWidget): widget is YoutubeWidget =>
+  widget.type === 'youtube' && widget.background && Boolean(widget.url)
+
 const youtubeBackgroundSrc = computed(() => {
-  const yt = widgets.value.find((w) => (w as any).type === 'youtube' && (w as any).background && (w as any).url)
-  if (!yt) return null as any
-  const embed = computeYouTubeEmbed((yt as any).url)
-  return embed || null
+  const yt = widgets.value.find(isYoutubeBackgroundWidget)
+  if (!yt) return null
+  const embed = computeYouTubeEmbed(yt.url)
+  return embed ?? null
 })
 </script>
