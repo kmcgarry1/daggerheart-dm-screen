@@ -11,9 +11,7 @@
       :standalone-card="false"
     />
 
-    <p class="text-sm font-semibold text-[color:var(--dh-panel-muted)]" aria-live="polite">
-      {{ remainingSteps }} steps remaining - {{ localProgress }} complete
-    </p>
+    <CountdownStatusLine :remaining="remainingSteps" :completed="localProgress" />
 
     <div v-if="editing" class="grid gap-4 md:grid-cols-2">
       <label
@@ -25,7 +23,7 @@
           type="text"
           placeholder="Countdown title"
           class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          @input="updateConfig({ title: ($event.target as HTMLInputElement).value })"
+          @input="setTitle(($event.target as HTMLInputElement).value)"
         />
       </label>
 
@@ -38,7 +36,7 @@
           type="text"
           placeholder="Describe what the countdown tracks"
           class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          @input="updateConfig({ description: ($event.target as HTMLInputElement).value })"
+          @input="setDescription(($event.target as HTMLInputElement).value)"
         />
       </label>
 
@@ -49,11 +47,7 @@
         <select
           :value="localConfig.paletteId"
           class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          @change="
-            updateConfig({
-              paletteId: ($event.target as HTMLSelectElement).value as TrackerPaletteName,
-            })
-          "
+          @change="setPalette(($event.target as HTMLSelectElement).value as TrackerPaletteName)"
         >
           <option v-for="option in paletteOptions" :key="option.id" :value="option.id">
             {{ formatPaletteLabel(option.id) }}
@@ -68,7 +62,7 @@
         <select
           :value="localConfig.iconId"
           class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          @change="updateConfig({ iconId: ($event.target as HTMLSelectElement).value })"
+          @change="setIcon(($event.target as HTMLSelectElement).value)"
         >
           <option v-for="option in iconOptions" :key="option.id" :value="option.id">
             {{ option.label }}
@@ -83,8 +77,8 @@
         <input
           :value="localConfig.stepCount"
           type="number"
-          :min="minSteps"
-          :max="maxSteps"
+          :min="MIN_COUNTDOWN_STEPS"
+          :max="MAX_COUNTDOWN_STEPS"
           class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
           @input="handleStepInput(($event.target as HTMLInputElement).value)"
         />
@@ -112,7 +106,7 @@
         <select
           :value="localConfig.cardVariantId"
           class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          @change="updateConfig({ cardVariantId: ($event.target as HTMLSelectElement).value })"
+          @change="setCardVariant(($event.target as HTMLSelectElement).value)"
         >
           <option v-for="option in cardVariantOptions" :key="option.id" :value="option.id">
             {{ option.label }}
@@ -127,7 +121,7 @@
         <select
           :value="localConfig.buttonSizeId"
           class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          @change="updateConfig({ buttonSizeId: ($event.target as HTMLSelectElement).value })"
+          @change="setButtonSize(($event.target as HTMLSelectElement).value)"
         >
           <option v-for="option in buttonSizeOptions" :key="option.id" :value="option.id">
             {{ option.label }}
@@ -148,22 +142,23 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 import TrackerControl from '../tracker/TrackerControl.vue'
-import { trackerIconOptions, trackerPaletteOptions } from '../tracker/registry'
-import type { TrackerPaletteName } from '../tracker/palettes'
-
+import CountdownStatusLine from './CountdownStatusLine.vue'
 import {
   MAX_COUNTDOWN_STEPS,
   MIN_COUNTDOWN_STEPS,
-  buttonSizeOptions,
-  cardVariantOptions,
-  defaultTitle,
   formatPaletteLabel,
   formatProgressLabel,
-} from './options'
-import type { ButtonSizeOption, CountdownConfig } from './types'
+  useCountdownConfigurator,
+  paletteOptions,
+  iconOptions,
+  buttonSizeOptions,
+  cardVariantOptions,
+} from './useCountdownConfigurator'
+import type { CountdownConfig } from './types'
+import type { TrackerPaletteName } from '../tracker/palettes'
 
 const props = defineProps<{
   config: CountdownConfig
@@ -174,116 +169,40 @@ const emit = defineEmits<{
   (e: 'update:config', payload: { config: CountdownConfig; title: string; description: string }): void
 }>()
 
-const paletteOptions = trackerPaletteOptions
-const iconOptions = trackerIconOptions
-const fallbackPalette = (paletteOptions[0]?.palette ?? trackerPaletteOptions[0]?.palette)!
-const fallbackIcon = (iconOptions[0]?.icon ?? trackerIconOptions[0]?.icon)!
-const fallbackButtonSize = buttonSizeOptions[0]!
-const fallbackCardVariant = cardVariantOptions[0]!
+const cloneConfig = (config: CountdownConfig): CountdownConfig =>
+  typeof structuredClone === 'function' ? structuredClone(config) : JSON.parse(JSON.stringify(config))
 
-const localConfig = computed(() => props.config)
-
-const totalSteps = computed(() =>
-  Math.max(
-    MIN_COUNTDOWN_STEPS,
-    Math.min(MAX_COUNTDOWN_STEPS, Math.round(localConfig.value.stepCount || MIN_COUNTDOWN_STEPS)),
-  ),
-)
-
-const selectedPalette = computed(() => {
-  const match = paletteOptions.find((option) => option.id === localConfig.value.paletteId)
-  return match?.palette ?? fallbackPalette
-})
-
-const selectedIcon = computed(() => {
-  const match = iconOptions.find((option) => option.id === localConfig.value.iconId)
-  return match?.icon ?? fallbackIcon
-})
-
-const selectedButtonSize = computed<ButtonSizeOption>(() => {
-  const match = buttonSizeOptions.find((option) => option.id === localConfig.value.buttonSizeId)
-  return match ?? fallbackButtonSize
-})
-
-const selectedCardVariant = computed(() => {
-  const match = cardVariantOptions.find((option) => option.id === localConfig.value.cardVariantId)
-  return match ?? fallbackCardVariant
-})
-
-const titleText = computed(() => {
-  const raw = localConfig.value.title?.trim()
-  return raw && raw.length > 0 ? raw : defaultTitle
-})
-
-const descriptionText = computed(() => localConfig.value.description?.trim() ?? '')
-
-const maxSteps = MAX_COUNTDOWN_STEPS
-const minSteps = MIN_COUNTDOWN_STEPS
-
-const clampStepCount = (value: number) =>
-  Math.max(MIN_COUNTDOWN_STEPS, Math.min(MAX_COUNTDOWN_STEPS, Math.round(value || 0)))
-
-const trackerOptions = computed(() =>
-  Array.from({ length: totalSteps.value }, (_, index) => {
-    const step = index + 1
-    return {
-      value: step,
-      label: `Mark step ${step} complete`,
-      icon: selectedIcon.value,
-    }
-  }),
-)
-
-const progressOptions = computed(() =>
-  Array.from({ length: totalSteps.value + 1 }, (_, index) => index),
-)
-
-const localProgress = computed({
-  get: () => Math.max(0, Math.min(localConfig.value.progress, totalSteps.value)),
-  set: (value: number) => {
-    setProgress(value)
-  },
-})
-
-const remainingSteps = computed(() => Math.max(totalSteps.value - localProgress.value, 0))
-
-const handleStepInput = (value: string) => {
-  const parsed = Number(value)
-  if (Number.isNaN(parsed)) {
-    updateConfig({ stepCount: MIN_COUNTDOWN_STEPS })
-    return
-  }
-  updateConfig({ stepCount: parsed })
-}
-
-const updateConfig = (update: Partial<CountdownConfig>) => {
-  const next: CountdownConfig = {
-    ...localConfig.value,
-    ...update,
-  }
-
-  next.stepCount = clampStepCount(next.stepCount)
-  next.progress = Math.max(0, Math.min(next.progress ?? 0, next.stepCount))
-  next.title = (next.title ?? '').trim()
-  next.description = (next.description ?? '').trim()
-
-  emit('update:config', {
-    config: next,
-    title: next.title.length > 0 ? next.title : defaultTitle,
-    description: next.description,
-  })
-}
-
-const setProgress = (value: number) => {
-  updateConfig({ progress: Math.max(0, Math.min(value, totalSteps.value)) })
-}
+const localConfig = ref<CountdownConfig>(cloneConfig(props.config))
 
 watch(
-  () => localConfig.value.stepCount,
+  () => props.config,
   (next) => {
-    if (localConfig.value.progress > next) {
-      updateConfig({ progress: next })
-    }
+    localConfig.value = cloneConfig(next)
   },
+  { deep: true },
 )
+
+const {
+  trackerOptions,
+  progressOptions,
+  selectedPalette,
+  selectedButtonSize,
+  selectedCardVariant,
+  titleText,
+  descriptionText,
+  remainingSteps,
+  localProgress,
+  setProgress,
+  handleStepInput,
+  setPalette,
+  setIcon,
+  setCardVariant,
+  setButtonSize,
+  setTitle,
+  setDescription,
+  totalSteps,
+} = useCountdownConfigurator({
+  config: localConfig,
+  onCommit: (payload) => emit('update:config', payload),
+})
 </script>
