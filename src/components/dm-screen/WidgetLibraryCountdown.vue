@@ -35,7 +35,7 @@
         >
           <span>Title</span>
           <input
-            v-model="titleInput"
+            v-model.trim="titleInput"
             type="text"
             placeholder="Countdown title"
             class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
