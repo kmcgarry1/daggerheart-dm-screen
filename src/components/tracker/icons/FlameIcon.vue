@@ -1,38 +1,8 @@
 <template>
-  <svg
-    :class="['h-full w-full', props.class]"
-    viewBox="0 0 32 32"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M16 4C16 4 8 10 8 16C8 21.5228 11.5817 26 16 26C20.4183 26 24 21.5228 24 16C24 12 21 8 18.5 6.5C17.5 8.5 18 11 16 12.5C14.5 13.6667 13.8 11.6 14 10C11 12 12 17 15 19C15.7754 19.5816 14.5 22 12.5 20C11 18.5 11 16 11 16"
-      :style="{
-        fill: 'var(--tracker-icon-fill, rgba(255, 255, 255, 0.85))',
-        stroke: 'currentColor',
-        strokeWidth: 1.5,
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-      }"
-    />
-    <path
-      d="M15.5 14C14 16.5 15 19 17 20.5"
-      :style="{
-        stroke: 'var(--tracker-icon-accent, currentColor)',
-        strokeWidth: 1.5,
-        strokeLinecap: 'round',
-      }"
-    />
-  </svg>
-</template>
+ <svg
+  style="height: 32px; width: 32px"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 512 512"
+><g class="" style="" transform="translate(0,0)"><path d="M166 121c0 90 90 105 90 180 0 30-30 75-75 75s-75-45-45-120c-45 30-60 60-60 90 0 75 75 150 180 150s180-45 180-135c.67-133.125-153.4-177.596-195-240-30-45-15-75 15-105-60 15-90 57-90 105z" fill="#fff" fill-opacity="1"></path></g></svg>
 
-<script lang="ts" setup>
-const props = withDefaults(
-  defineProps<{
-    class?: string
-  }>(),
-  {
-    class: '',
-  },
-)
-</script>
+</template>
