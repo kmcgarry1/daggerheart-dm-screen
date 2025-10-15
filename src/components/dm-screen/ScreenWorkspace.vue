@@ -15,7 +15,7 @@
         class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
       >
         <dh-card
-          v-for="widget in widgets"
+          v-for="widget in visibleWidgets"
           :key="widget.id"
           :class="[
             'relative flex flex-col gap-4 transition-all duration-200',
@@ -23,6 +23,7 @@
             widget.id === activeWidgetId
               ? 'ring-2 ring-violet-400/70 shadow-2xl'
               : 'hover:-translate-y-1 hover:shadow-xl',
+            widget.hidden ? 'opacity-80' : '',
           ]"
         >
           <template #title>
@@ -40,6 +41,7 @@
                 {{ widget.title || (widget.type === 'countdown' ? 'Countdown' : 'Untitled Widget') }}
               </span>
               <div class="flex items-center gap-2">
+                
                 <select
                   v-if="widget.editing"
                   :value="widget.size"
@@ -70,10 +72,34 @@
                 >
                   Delete
                 </button>
+                <button
+                  v-if="!widget.hidden"
+                  type="button"
+                  class="dh-toggle px-2 py-1 text-xs"
+                  @click="updateWidget(widget.id, 'hidden', true)"
+                  aria-label="Minimize widget"
+                  title="Minimize"
+                >
+                  —
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  class="dh-toggle px-2 py-1 text-xs"
+                  @click="updateWidget(widget.id, 'hidden', false)"
+                  aria-label="Restore widget"
+                  title="Restore"
+                >
+                  ◼
+                </button>
               </div>
             </div>
           </template>
           <template #body>
+            <div v-if="widget.hidden" class="flex items-center gap-3 text-sm text-[color:var(--dh-panel-muted)]">
+              <span class="inline-block h-2 w-2 rounded-full bg-[color:var(--dh-panel-muted)]"></span>
+              Minimized — use dock or Restore to expand
+            </div>
             <textarea
               v-if="widget.editing && widget.type === 'note'"
               :value="widget.body"
@@ -86,11 +112,76 @@
               {{ widget.body || 'Add notes or quick references for your session.' }}
             </p>
             <CountdownWidgetCard
-              v-else
+              v-else-if="!widget.hidden && widget.type === 'countdown'"
               :config="widget.countdown"
               :editing="widget.editing"
               @update:config="updateCountdown(widget.id, $event)"
             />
+            <div v-else-if="!widget.hidden && widget.type === 'youtube'" class="flex flex-col gap-3">
+              <div v-if="widget.editing" class="flex flex-col gap-2">
+                <input
+                  :value="widget.title"
+                  type="text"
+                  placeholder="Title (optional)"
+                  class="w-full rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+                  @input="updateWidget(widget.id, 'title', ($event.target as HTMLInputElement).value)"
+                />
+                <input
+                  :value="widget.url"
+                  type="url"
+                  placeholder="YouTube URL (https://...)"
+                  class="w-full rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+                  @input="updateWidget(widget.id, 'url', ($event.target as HTMLInputElement).value)"
+                />
+                <label class="inline-flex items-center gap-2 text-sm text-[color:var(--dh-panel-text)]">
+                  <input
+                    type="checkbox"
+                    :checked="widget.background"
+                    @change="updateWidget(widget.id, 'background', ($event.target as HTMLInputElement).checked)"
+                  />
+                  Use as background
+                </label>
+              </div>
+              <div v-if="widget.url" class="aspect-video w-full overflow-hidden rounded-xl border border-[color:var(--dh-panel-border)] bg-black">
+                <iframe
+                  :src="computeYouTubeEmbed(widget.url)"
+                  title="YouTube video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen
+                  class="h-full w-full"
+                ></iframe>
+              </div>
+              <p v-else class="text-sm text-[color:var(--dh-panel-muted)]">Paste a YouTube link to embed.</p>
+            </div>
+            <div v-else-if="!widget.hidden && widget.type === 'spotify'" class="flex flex-col gap-3">
+              <div v-if="widget.editing" class="flex flex-col gap-2">
+                <input
+                  :value="widget.title"
+                  type="text"
+                  placeholder="Title (optional)"
+                  class="w-full rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+                  @input="updateWidget(widget.id, 'title', ($event.target as HTMLInputElement).value)"
+                />
+                <input
+                  :value="widget.url"
+                  type="url"
+                  placeholder="Spotify URL (track/album/playlist)"
+                  class="w-full rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+                  @input="updateWidget(widget.id, 'url', ($event.target as HTMLInputElement).value)"
+                />
+              </div>
+              <div v-if="widget.url" class="w-full overflow-hidden rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)]">
+                <iframe
+                  :src="computeSpotifyEmbed(widget.url)"
+                  width="100%"
+                  height="152"
+                  frameborder="0"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  loading="lazy"
+                ></iframe>
+              </div>
+              <p v-else class="text-sm text-[color:var(--dh-panel-muted)]">Paste a Spotify link to embed.</p>
+            </div>
           </template>
         </dh-card>
       </div>
@@ -111,7 +202,8 @@
 </template>
 
 <script lang="ts" setup>
-import { toRefs } from 'vue'
+import { toRefs, computed } from 'vue'
+import { computeSpotifyEmbed, computeYouTubeEmbed } from '../../utils/embeds'
 
 import DhCard from '../core/DhCard.vue'
 import CountdownWidgetCard from '../countdown/CountdownWidgetCard.vue'
@@ -143,8 +235,26 @@ type CountdownWidget = {
   countdown: CountdownConfig
   description: string
 }
+type YoutubeWidget = {
+  id: string
+  title: string
+  url: string
+  size: WidgetSize
+  editing: boolean
+  type: 'youtube'
+  background: boolean
+}
 
-type DashboardWidget = NoteWidget | CountdownWidget
+type SpotifyWidget = {
+  id: string
+  title: string
+  url: string
+  size: WidgetSize
+  editing: boolean
+  type: 'spotify'
+}
+
+type DashboardWidget = (NoteWidget | CountdownWidget | YoutubeWidget | SpotifyWidget) & { hidden?: boolean }
 
 const props = defineProps<{
   widgets: DashboardWidget[]
@@ -157,7 +267,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'toggle-edit', id: string): void
   (e: 'remove-widget', id: string): void
-  (e: 'update-widget', payload: { id: string; key: 'title' | 'body' | 'size'; value: string }): void
+  (e: 'update-widget', payload: { id: string; key: 'title' | 'body' | 'size' | 'url' | 'background' | 'hidden'; value: string | boolean }): void
   (
     e: 'update-countdown',
     payload: { id: string; config: CountdownConfig; title: string; description: string },
@@ -165,7 +275,11 @@ const emit = defineEmits<{
   (e: 'toggle-collapsed'): void
 }>()
 
-const updateWidget = (id: string, key: 'title' | 'body' | 'size', value: string) => {
+const updateWidget = (
+  id: string,
+  key: 'title' | 'body' | 'size' | 'url' | 'background' | 'hidden',
+  value: string | boolean,
+) => {
   emit('update-widget', { id, key, value })
 }
 
@@ -177,4 +291,7 @@ const updateCountdown = (
 }
 
 const { widgets, activeWidgetId, sizeOptions, spanClassForSize, collapsed } = toRefs(props)
+const visibleWidgets = computed(() => widgets.value.filter((w) => !w.hidden))
+
+// embed helpers now shared via utils
 </script>

@@ -89,10 +89,38 @@ export const tidePalette: TrackerPalette = {
   ),
 }
 
+export const cyberpunkPalette: TrackerPalette = {
+  rail: 'rgba(255, 0, 255, 0.3)',
+  fill: 'linear-gradient(135deg, rgba(255, 0, 255, 0.9), rgba(0, 255, 255, 0.85))',
+  glow: 'rgba(255, 0, 255, 0.35)',
+  burst: 'rgba(255, 0, 255, 0.55)',
+  button: createButtonPalette(
+    {
+      background: 'rgba(30, 0, 30, 0.94)',
+      border: 'rgba(255, 0, 255, 0.32)',
+      color: 'rgba(200, 100, 200, 0.65)',
+      hoverBorder: 'rgba(255, 0, 255, 0.55)',
+      hoverShadow: '0 20px 34px rgba(255, 0, 255, 0.26)',
+      shadow: undefined,
+      iconAccent: 'rgba(255, 0, 255, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.85)',
+    },
+    {
+      background: 'linear-gradient(135deg, rgba(100, 0, 100, 0.95), rgba(0, 100, 100, 0.92))',
+      border: 'rgba(255, 0, 255, 0.85)',
+      color: 'rgba(255, 255, 255, 0.94)',
+      shadow: '0 22px 38px rgba(255, 0, 255, 0.26)',
+      iconAccent: 'rgba(255, 0, 255, 0.82)',
+      iconFill: 'rgba(255, 255, 255, 0.94)',
+    },
+  ),
+}
+
 export const trackerPalettes = {
   fear: fearPalette,
   ember: emberPalette,
   tide: tidePalette,
+  cyberpunk: cyberpunkPalette,
 }
 
 export type TrackerPaletteName = keyof typeof trackerPalettes

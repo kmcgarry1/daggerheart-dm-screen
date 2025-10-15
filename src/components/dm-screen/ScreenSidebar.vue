@@ -68,6 +68,9 @@
       <p class="text-sm text-[color:var(--dh-panel-muted)]">
         Upload a collection of images to cycle softly behind your command center.
       </p>
+      <p class="text-xs text-[color:var(--dh-panel-muted)]">
+        If a YouTube widget is set as background, it will play behind the dashboard.
+      </p>
       <input
         ref="fileInputRef"
         class="hidden"
@@ -168,8 +171,26 @@ type CountdownWidget = {
   editing: boolean
   type: 'countdown'
 }
+type YoutubeWidget = {
+  id: string
+  title: string
+  url: string
+  size: WidgetSize
+  editing: boolean
+  type: 'youtube'
+  background: boolean
+}
 
-type DashboardWidget = NoteWidget | CountdownWidget
+type SpotifyWidget = {
+  id: string
+  title: string
+  url: string
+  size: WidgetSize
+  editing: boolean
+  type: 'spotify'
+}
+
+type DashboardWidget = NoteWidget | CountdownWidget | YoutubeWidget | SpotifyWidget
 
 type WidgetType = DashboardWidget['type']
 
