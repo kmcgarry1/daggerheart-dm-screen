@@ -1,5 +1,35 @@
 import type { TrackerPalette, TrackerButtonPalette, TrackerButtonState } from './types'
 
+const hexToRgb = (hex: string): [number, number, number] => {
+  const normalized = hex.replace('#', '')
+
+  if (![3, 6].includes(normalized.length)) {
+    throw new Error(`Unsupported hex color: ${hex}`)
+  }
+
+  const values =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((char) => `${char}${char}`)
+      : normalized.match(/.{2}/g) ?? []
+
+  const [r, g, b] = values.map((value) => parseInt(value, 16)) as [number, number, number]
+
+  return [r, g, b]
+}
+
+const withAlpha = (hex: string, alpha: number) => {
+  const [r, g, b] = hexToRgb(hex)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+const gradient = (from: string, to: string, fromAlpha = 0.95, toAlpha = 0.9) =>
+  `linear-gradient(135deg, ${withAlpha(from, fromAlpha)}, ${withAlpha(to, toAlpha)})`
+
+const dropShadow = (hex: string, alpha = 0.26, y = 20, blur = 34) =>
+  `0 ${y}px ${blur}px ${withAlpha(hex, alpha)}`
+
 const createButtonPalette = (
   base: TrackerButtonState & { hoverBorder?: string; hoverShadow?: string },
   active: TrackerButtonState,
@@ -9,244 +39,244 @@ const createButtonPalette = (
 })
 
 export const fearPalette: TrackerPalette = {
-  rail: 'rgba(122, 99, 215, 0.25)',
-  fill: 'linear-gradient(135deg, rgba(122, 79, 235, 0.9), rgba(94, 168, 255, 0.85))',
-  glow: 'rgba(142, 110, 250, 0.35)',
-  burst: 'rgba(167, 139, 250, 0.55)',
+  rail: withAlpha('#6366F1', 0.28),
+  fill: gradient('#7C3AED', '#4338CA', 0.92, 0.88),
+  glow: withAlpha('#A855F7', 0.34),
+  burst: withAlpha('#C4B5FD', 0.52),
   button: createButtonPalette(
     {
-      background: 'rgba(245, 242, 255, 0.94)',
-      border: 'rgba(118, 104, 208, 0.32)',
-      color: 'rgba(70, 47, 132, 0.65)',
-      hoverBorder: 'rgba(145, 124, 238, 0.55)',
-      hoverShadow: '0 20px 34px rgba(110, 140, 230, 0.26)',
-      shadow: undefined,
-      iconAccent: 'rgba(58, 28, 128, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.85)',
+      background: withAlpha('#F5F3FF', 0.94),
+      border: withAlpha('#C4B5FD', 0.45),
+      color: withAlpha('#312E81', 0.82),
+      hoverBorder: withAlpha('#C4B5FD', 0.78),
+      hoverShadow: dropShadow('#7C3AED', 0.22, 18, 32),
+      shadow: dropShadow('#7C3AED', 0.14, 12, 22),
+      iconAccent: withAlpha('#7C3AED', 0.9),
+      iconFill: withAlpha('#FFFFFF', 0.94),
     },
     {
-      background: 'linear-gradient(135deg, rgba(107, 70, 210, 0.95), rgba(139, 92, 255, 0.92))',
-      border: 'rgba(152, 120, 255, 0.85)',
-      color: 'rgba(255, 255, 255, 0.94)',
-      shadow: '0 22px 38px rgba(110, 140, 230, 0.26)',
-      iconAccent: 'rgba(58, 28, 128, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.94)',
+      background: gradient('#6D28D9', '#4338CA', 0.96, 0.92),
+      border: withAlpha('#C4B5FD', 0.9),
+      color: withAlpha('#F9FAFB', 0.96),
+      shadow: dropShadow('#7C3AED', 0.28, 20, 36),
+      iconAccent: withAlpha('#EDE9FE', 0.95),
+      iconFill: withAlpha('#FFFFFF', 0.98),
     },
   ),
 }
 
 export const emberPalette: TrackerPalette = {
-  rail: 'rgba(230, 120, 80, 0.25)',
-  fill: 'linear-gradient(135deg, rgba(240, 140, 100, 0.92), rgba(255, 198, 110, 0.85))',
-  glow: 'rgba(250, 130, 90, 0.35)',
-  burst: 'rgba(255, 160, 110, 0.5)',
+  rail: withAlpha('#F97316', 0.26),
+  fill: gradient('#EA580C', '#F97316', 0.94, 0.88),
+  glow: withAlpha('#FB923C', 0.35),
+  burst: withAlpha('#FDBA74', 0.5),
   button: createButtonPalette(
     {
-      background: 'rgba(255, 240, 232, 0.95)',
-      border: 'rgba(246, 180, 130, 0.45)',
-      color: 'rgba(160, 75, 40, 0.78)',
-      hoverBorder: 'rgba(255, 170, 120, 0.78)',
-      hoverShadow: '0 18px 32px rgba(240, 133, 90, 0.25)',
-      shadow: undefined,
-      iconAccent: 'rgba(186, 70, 30, 0.85)',
-      iconFill: 'rgba(255, 250, 240, 0.9)',
+      background: withAlpha('#FFF7ED', 0.95),
+      border: withAlpha('#FED7AA', 0.5),
+      color: withAlpha('#9A3412', 0.82),
+      hoverBorder: withAlpha('#FDBA74', 0.85),
+      hoverShadow: dropShadow('#F97316', 0.22, 18, 32),
+      shadow: dropShadow('#F97316', 0.14, 12, 22),
+      iconAccent: withAlpha('#EA580C', 0.88),
+      iconFill: withAlpha('#FFF4E5', 0.94),
     },
     {
-      background: 'linear-gradient(135deg, rgba(240, 133, 90, 0.98), rgba(255, 188, 110, 0.9))',
-      border: 'rgba(255, 190, 120, 0.9)',
-      color: 'rgba(255, 253, 248, 0.95)',
-      shadow: '0 20px 34px rgba(240, 133, 90, 0.28)',
-      iconAccent: 'rgba(255, 215, 160, 0.95)',
-      iconFill: 'rgba(255, 241, 224, 0.95)',
+      background: gradient('#EA580C', '#F97316', 0.98, 0.9),
+      border: withAlpha('#FDBA74', 0.9),
+      color: withAlpha('#FFFBEB', 0.96),
+      shadow: dropShadow('#F97316', 0.28, 20, 36),
+      iconAccent: withAlpha('#FFEDD5', 0.95),
+      iconFill: withAlpha('#FFF7ED', 0.98),
     },
   ),
 }
 
 export const tidePalette: TrackerPalette = {
-  rail: 'rgba(86, 160, 220, 0.3)',
-  fill: 'linear-gradient(135deg, rgba(60, 150, 210, 0.88), rgba(120, 200, 255, 0.82))',
-  glow: 'rgba(68, 150, 222, 0.38)',
-  burst: 'rgba(120, 190, 255, 0.45)',
+  rail: withAlpha('#0EA5E9', 0.28),
+  fill: gradient('#0284C7', '#06B6D4', 0.94, 0.88),
+  glow: withAlpha('#38BDF8', 0.36),
+  burst: withAlpha('#BAE6FD', 0.5),
   button: createButtonPalette(
     {
-      background: 'rgba(232, 246, 255, 0.95)',
-      border: 'rgba(128, 190, 240, 0.45)',
-      color: 'rgba(38, 96, 140, 0.78)',
-      hoverBorder: 'rgba(142, 202, 255, 0.78)',
-      hoverShadow: '0 18px 32px rgba(88, 158, 220, 0.24)',
-      shadow: undefined,
-      iconAccent: 'rgba(18, 78, 124, 0.85)',
-      iconFill: 'rgba(242, 252, 255, 0.9)',
+      background: withAlpha('#F0FDFF', 0.96),
+      border: withAlpha('#CFFAFE', 0.55),
+      color: withAlpha('#0F4C81', 0.78),
+      hoverBorder: withAlpha('#7DD3FC', 0.9),
+      hoverShadow: dropShadow('#0EA5E9', 0.18, 18, 32),
+      shadow: dropShadow('#0EA5E9', 0.12, 12, 22),
+      iconAccent: withAlpha('#0E7490', 0.9),
+      iconFill: withAlpha('#FFFFFF', 0.96),
     },
     {
-      background: 'linear-gradient(135deg, rgba(68, 158, 220, 0.95), rgba(122, 206, 255, 0.88))',
-      border: 'rgba(132, 210, 255, 0.9)',
-      color: 'rgba(245, 250, 255, 0.97)',
-      shadow: '0 20px 36px rgba(68, 150, 220, 0.26)',
-      iconAccent: 'rgba(204, 238, 255, 0.92)',
-      iconFill: 'rgba(255, 255, 255, 0.96)',
+      background: gradient('#0369A1', '#0EA5E9', 0.96, 0.9),
+      border: withAlpha('#7DD3FC', 0.9),
+      color: withAlpha('#F0FDFF', 0.97),
+      shadow: dropShadow('#0EA5E9', 0.26, 20, 36),
+      iconAccent: withAlpha('#E0F2FE', 0.95),
+      iconFill: withAlpha('#FFFFFF', 0.98),
     },
   ),
 }
 
 export const cyberpunkPalette: TrackerPalette = {
-  rail: 'rgba(255, 0, 255, 0.3)',
-  fill: 'linear-gradient(135deg, rgba(255, 0, 255, 0.9), rgba(0, 255, 255, 0.85))',
-  glow: 'rgba(255, 0, 255, 0.35)',
-  burst: 'rgba(255, 0, 255, 0.55)',
+  rail: withAlpha('#F472B6', 0.32),
+  fill: gradient('#D946EF', '#06B6D4', 0.92, 0.85),
+  glow: withAlpha('#22D3EE', 0.38),
+  burst: withAlpha('#F9A8D4', 0.5),
   button: createButtonPalette(
     {
-      background: 'rgba(30, 0, 30, 0.94)',
-      border: 'rgba(255, 0, 255, 0.32)',
-      color: 'rgba(200, 100, 200, 0.65)',
-      hoverBorder: 'rgba(255, 0, 255, 0.55)',
-      hoverShadow: '0 20px 34px rgba(255, 0, 255, 0.26)',
-      shadow: undefined,
-      iconAccent: 'rgba(255, 0, 255, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.85)',
+      background: withAlpha('#2A0F3C', 0.88),
+      border: withAlpha('#F472B6', 0.38),
+      color: withAlpha('#FDEBFF', 0.88),
+      hoverBorder: withAlpha('#22D3EE', 0.55),
+      hoverShadow: dropShadow('#F472B6', 0.32, 20, 34),
+      shadow: dropShadow('#F472B6', 0.22, 12, 22),
+      iconAccent: withAlpha('#22D3EE', 0.9),
+      iconFill: withAlpha('#FEF2FF', 0.9),
     },
     {
-      background: 'linear-gradient(135deg, rgba(100, 0, 100, 0.95), rgba(0, 100, 100, 0.92))',
-      border: 'rgba(255, 0, 255, 0.85)',
-      color: 'rgba(255, 255, 255, 0.94)',
-      shadow: '0 22px 38px rgba(255, 0, 255, 0.26)',
-      iconAccent: 'rgba(255, 0, 255, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.94)',
+      background: gradient('#C026D3', '#0EA5E9', 0.95, 0.88),
+      border: withAlpha('#F9A8D4', 0.85),
+      color: withAlpha('#FDF4FF', 0.96),
+      shadow: dropShadow('#22D3EE', 0.38, 20, 38),
+      iconAccent: withAlpha('#22D3EE', 0.95),
+      iconFill: withAlpha('#FFFFFF', 0.98),
     },
   ),
 }
 
 export const naturePalette: TrackerPalette = {
-  rail: 'rgba(100, 200, 100, 0.3)',
-  fill: 'linear-gradient(135deg, rgba(80, 180, 80, 0.9), rgba(120, 220, 120, 0.85))',
-  glow: 'rgba(100, 200, 100, 0.35)',
-  burst: 'rgba(120, 220, 120, 0.55)',
+  rail: withAlpha('#22C55E', 0.28),
+  fill: gradient('#16A34A', '#22C55E', 0.94, 0.88),
+  glow: withAlpha('#4ADE80', 0.36),
+  burst: withAlpha('#BBF7D0', 0.52),
   button: createButtonPalette(
     {
-      background: 'rgba(240, 255, 240, 0.94)',
-      border: 'rgba(100, 200, 100, 0.32)',
-      color: 'rgba(50, 150, 50, 0.65)',
-      hoverBorder: 'rgba(120, 220, 120, 0.55)',
-      hoverShadow: '0 20px 34px rgba(100, 200, 100, 0.26)',
-      shadow: undefined,
-      iconAccent: 'rgba(50, 150, 50, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.85)',
+      background: withAlpha('#F3FAF6', 0.95),
+      border: withAlpha('#BBF7D0', 0.5),
+      color: withAlpha('#14532D', 0.82),
+      hoverBorder: withAlpha('#A7F3D0', 0.85),
+      hoverShadow: dropShadow('#22C55E', 0.2, 18, 32),
+      shadow: dropShadow('#22C55E', 0.14, 12, 22),
+      iconAccent: withAlpha('#15803D', 0.88),
+      iconFill: withAlpha('#F7FFF9', 0.95),
     },
     {
-      background: 'linear-gradient(135deg, rgba(50, 150, 50, 0.95), rgba(100, 200, 100, 0.92))',
-      border: 'rgba(120, 220, 120, 0.85)',
-      color: 'rgba(255, 255, 255, 0.94)',
-      shadow: '0 22px 38px rgba(100, 200, 100, 0.26)',
-      iconAccent: 'rgba(50, 150, 50, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.94)',
+      background: gradient('#15803D', '#22C55E', 0.96, 0.9),
+      border: withAlpha('#A7F3D0', 0.9),
+      color: withAlpha('#F7FFF9', 0.96),
+      shadow: dropShadow('#22C55E', 0.26, 20, 36),
+      iconAccent: withAlpha('#DCFCE7', 0.95),
+      iconFill: withAlpha('#FFFFFF', 0.98),
     },
   ),
 }
 
 export const techPalette: TrackerPalette = {
-  rail: 'rgba(100, 100, 200, 0.3)',
-  fill: 'linear-gradient(135deg, rgba(80, 80, 180, 0.9), rgba(120, 120, 220, 0.85))',
-  glow: 'rgba(100, 100, 200, 0.35)',
-  burst: 'rgba(120, 120, 220, 0.55)',
+  rail: withAlpha('#38BDF8', 0.26),
+  fill: gradient('#1D4ED8', '#22D3EE', 0.94, 0.88),
+  glow: withAlpha('#38BDF8', 0.34),
+  burst: withAlpha('#CFFAFE', 0.48),
   button: createButtonPalette(
     {
-      background: 'rgba(240, 240, 255, 0.94)',
-      border: 'rgba(100, 100, 200, 0.32)',
-      color: 'rgba(50, 50, 150, 0.65)',
-      hoverBorder: 'rgba(120, 120, 220, 0.55)',
-      hoverShadow: '0 20px 34px rgba(100, 100, 200, 0.26)',
-      shadow: undefined,
-      iconAccent: 'rgba(50, 50, 150, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.85)',
+      background: withAlpha('#F8FAFC', 0.95),
+      border: withAlpha('#CBD5F5', 0.5),
+      color: withAlpha('#0F172A', 0.82),
+      hoverBorder: withAlpha('#93C5FD', 0.85),
+      hoverShadow: dropShadow('#1D4ED8', 0.2, 18, 32),
+      shadow: dropShadow('#1D4ED8', 0.14, 12, 22),
+      iconAccent: withAlpha('#1E40AF', 0.9),
+      iconFill: withAlpha('#FFFFFF', 0.94),
     },
     {
-      background: 'linear-gradient(135deg, rgba(50, 50, 150, 0.95), rgba(100, 100, 200, 0.92))',
-      border: 'rgba(120, 120, 220, 0.85)',
-      color: 'rgba(255, 255, 255, 0.94)',
-      shadow: '0 22px 38px rgba(100, 100, 200, 0.26)',
-      iconAccent: 'rgba(50, 50, 150, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.94)',
+      background: gradient('#1D4ED8', '#22D3EE', 0.96, 0.9),
+      border: withAlpha('#93C5FD', 0.9),
+      color: withAlpha('#F8FAFC', 0.97),
+      shadow: dropShadow('#1D4ED8', 0.26, 20, 36),
+      iconAccent: withAlpha('#DBEAFE', 0.95),
+      iconFill: withAlpha('#FFFFFF', 0.98),
     },
   ),
 }
 
 export const dangerPalette: TrackerPalette = {
-  rail: 'rgba(200, 50, 50, 0.3)',
-  fill: 'linear-gradient(135deg, rgba(180, 30, 30, 0.9), rgba(220, 70, 70, 0.85))',     
-  glow: 'rgba(200, 50, 50, 0.35)',
-  burst: 'rgba(220, 70, 70, 0.55)',
+  rail: withAlpha('#F87171', 0.28),
+  fill: gradient('#DC2626', '#F97316', 0.94, 0.88),
+  glow: withAlpha('#F87171', 0.34),
+  burst: withAlpha('#FECACA', 0.52),
   button: createButtonPalette(
     {
-      background: 'rgba(255, 240, 240, 0.94)',
-      border: 'rgba(200, 50, 50, 0.32)',
-      color: 'rgba(150, 20, 20, 0.65)',
-      hoverBorder: 'rgba(220, 70, 70, 0.55)',
-      hoverShadow: '0 20px 34px rgba(200, 50, 50, 0.26)',
-      shadow: undefined,
-      iconAccent: 'rgba(150, 20, 20, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.85)',
+      background: withAlpha('#FEF2F2', 0.95),
+      border: withAlpha('#FECACA', 0.5),
+      color: withAlpha('#7F1D1D', 0.82),
+      hoverBorder: withAlpha('#FCA5A5', 0.85),
+      hoverShadow: dropShadow('#DC2626', 0.2, 18, 32),
+      shadow: dropShadow('#DC2626', 0.14, 12, 22),
+      iconAccent: withAlpha('#B91C1C', 0.88),
+      iconFill: withAlpha('#FFF7F7', 0.95),
     },
     {
-      background: 'linear-gradient(135deg, rgba(150, 20, 20, 0.95), rgba(200, 50, 50, 0.92))',
-      border: 'rgba(220, 70, 70, 0.85)',
-      color: 'rgba(255, 255, 255, 0.94)',
-      shadow: '0 22px 38px rgba(200, 50, 50, 0.26)',
-      iconAccent: 'rgba(150, 20, 20, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.94)',
+      background: gradient('#B91C1C', '#EF4444', 0.96, 0.9),
+      border: withAlpha('#FCA5A5', 0.9),
+      color: withAlpha('#FFF7F7', 0.96),
+      shadow: dropShadow('#EF4444', 0.28, 20, 36),
+      iconAccent: withAlpha('#FEE2E2', 0.95),
+      iconFill: withAlpha('#FFFFFF', 0.98),
     },
   ),
 }
 
 export const corruptionPalette: TrackerPalette = {
-  rail: 'rgba(150, 0, 150, 0.3)',
-  fill: 'linear-gradient(135deg, rgba(130, 0, 130, 0.9), rgba(170, 0, 170, 0.85))',     
-  glow: 'rgba(150, 0, 150, 0.35)',
-  burst: 'rgba(170, 0, 170, 0.55)',
+  rail: withAlpha('#C084FC', 0.3),
+  fill: gradient('#7E22CE', '#DB2777', 0.92, 0.88),
+  glow: withAlpha('#A855F7', 0.36),
+  burst: withAlpha('#FBCFE8', 0.5),
   button: createButtonPalette(
     {
-      background: 'rgba(255, 240, 255, 0.94)',
-      border: 'rgba(150, 0, 150, 0.32)',
-      color: 'rgba(100, 0, 100, 0.65)',
-      hoverBorder: 'rgba(170, 0, 170, 0.55)',
-      hoverShadow: '0 20px 34px rgba(150, 0, 150, 0.26)',
-      shadow: undefined,
-      iconAccent: 'rgba(100, 0, 100, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.85)',
+      background: withAlpha('#FDF2FF', 0.95),
+      border: withAlpha('#F5D0FE', 0.5),
+      color: withAlpha('#701A75', 0.82),
+      hoverBorder: withAlpha('#F0ABFC', 0.85),
+      hoverShadow: dropShadow('#A855F7', 0.22, 18, 32),
+      shadow: dropShadow('#A855F7', 0.14, 12, 22),
+      iconAccent: withAlpha('#A21CAF', 0.9),
+      iconFill: withAlpha('#FFF5FF', 0.95),
     },
     {
-      background: 'linear-gradient(135deg, rgba(100, 0, 100, 0.95), rgba(150, 0, 150, 0.92))',
-      border: 'rgba(170, 0, 170, 0.85)',
-      color: 'rgba(255, 255, 255, 0.94)',
-      shadow: '0 22px 38px rgba(150, 0, 150, 0.26)',
-      iconAccent: 'rgba(100, 0, 100, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.94)',
+      background: gradient('#A21CAF', '#DB2777', 0.96, 0.9),
+      border: withAlpha('#F0ABFC', 0.9),
+      color: withAlpha('#FFF5FF', 0.96),
+      shadow: dropShadow('#F472B6', 0.28, 20, 36),
+      iconAccent: withAlpha('#FCE7F3', 0.95),
+      iconFill: withAlpha('#FFFFFF', 0.98),
     },
   ),
 }
 
 export const highContrastPalette: TrackerPalette = {
-  rail: 'rgba(0, 0, 0, 0.3)',
-  fill: 'linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(255, 255, 255, 0.85))',
-  glow: 'rgba(0, 0, 0, 0.35)',
-  burst: 'rgba(0, 0, 0, 0.55)',
+  rail: withAlpha('#0F172A', 0.32),
+  fill: gradient('#111827', '#1F2937', 0.95, 0.88),
+  glow: withAlpha('#475569', 0.35),
+  burst: withAlpha('#1E293B', 0.45),
   button: createButtonPalette(
     {
-      background: 'rgba(255, 255, 255, 0.94)',
-      border: 'rgba(0, 0, 0, 0.32)',
-      color: 'rgba(0, 0, 0, 0.65)',
-      hoverBorder: 'rgba(0, 0, 0, 0.55)',
-      hoverShadow: '0 20px 34px rgba(0, 0, 0, 0.26)',
-      shadow: undefined,
-      iconAccent: 'rgba(0, 0, 0, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.85)',
+      background: withAlpha('#F8FAFC', 0.95),
+      border: withAlpha('#CBD5E1', 0.55),
+      color: withAlpha('#0F172A', 0.82),
+      hoverBorder: withAlpha('#1E293B', 0.72),
+      hoverShadow: dropShadow('#0F172A', 0.18, 18, 32),
+      shadow: dropShadow('#0F172A', 0.12, 12, 22),
+      iconAccent: withAlpha('#0F172A', 0.9),
+      iconFill: withAlpha('#FFFFFF', 0.94),
     },
     {
-      background: 'linear-gradient(135deg, rgba(50, 50, 50, 0.95), rgba(200, 200, 200, 0.92))',
-      border: 'rgba(0, 0, 0, 0.85)',
-      color: 'rgba(255, 255, 255, 0.94)',
-      shadow: '0 22px 38px rgba(0, 0, 0, 0.26)',
-      iconAccent: 'rgba(0, 0, 0, 0.82)',
-      iconFill: 'rgba(255, 255, 255, 0.94)',
+      background: gradient('#111827', '#0F172A', 0.96, 0.9),
+      border: withAlpha('#1E293B', 0.9),
+      color: withAlpha('#F8FAFC', 0.97),
+      shadow: dropShadow('#0F172A', 0.28, 20, 36),
+      iconAccent: withAlpha('#E2E8F0', 0.95),
+      iconFill: withAlpha('#FFFFFF', 0.98),
     },
   ),
 }
