@@ -150,11 +150,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
 import TrackerControl from '../tracker/TrackerControl.vue'
 import TrackerIconPicker from '../tracker/TrackerIconPicker.vue'
-import { trackerIconOptions, trackerPaletteOptions } from '../tracker/registry'
 import type { TrackerCardVariant, TrackerPalette } from '../tracker/types'
 
 import CountdownStatusLine from '../countdown/CountdownStatusLine.vue'
@@ -170,7 +169,6 @@ import {
   useCountdownConfigurator,
 } from '../countdown/useCountdownConfigurator'
 import { createDefaultCountdownConfig } from '../countdown/options'
-import TrackerControl from '../tracker/TrackerControl.vue'
 import type { TrackerPaletteName } from '../tracker/palettes'
 
 const baseConfig = createDefaultCountdownConfig()
@@ -196,4 +194,9 @@ const {
   setDescription,
   totalSteps,
 } = useCountdownConfigurator({ config })
+
+const selectedIconId = computed({
+  get: () => config.value.iconId ?? iconOptions[0]?.id ?? '',
+  set: (value: string) => setIcon(value),
+})
 </script>
