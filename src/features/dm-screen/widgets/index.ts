@@ -1,0 +1,7 @@
+export * from './dock'
+export * from './factory'
+export * from './focus'
+export * from './options'
+export * from './persistence'
+export * from './types'
+export * from './updateHandlers'
