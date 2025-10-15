@@ -142,7 +142,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { ref, watch, toRaw } from 'vue'
 
 import TrackerControl from '../tracker/TrackerControl.vue'
 import CountdownStatusLine from './CountdownStatusLine.vue'
@@ -169,9 +169,15 @@ const emit = defineEmits<{
   (e: 'update:config', payload: { config: CountdownConfig; title: string; description: string }): void
 }>()
 
-const cloneConfig = (config: CountdownConfig): CountdownConfig =>
-  typeof structuredClone === 'function' ? structuredClone(config) : JSON.parse(JSON.stringify(config))
+const cloneConfig = (config: CountdownConfig): CountdownConfig => {
+  const rawConfig = toRaw(config)
 
+  if (typeof structuredClone === 'function') {
+    return structuredClone(rawConfig)
+  }
+
+  return JSON.parse(JSON.stringify(rawConfig))
+}
 const localConfig = ref<CountdownConfig>(cloneConfig(props.config))
 
 watch(

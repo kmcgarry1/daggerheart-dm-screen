@@ -21,6 +21,13 @@ export interface CountdownWidget extends BaseWidget {
   countdown: CountdownConfig
 }
 
+export interface ConditionsWidget extends BaseWidget {
+  type: 'conditions'
+  description: string
+  titleColor?: string
+  dividerColor?: string
+}
+
 export interface YoutubeWidget extends BaseWidget {
   type: 'youtube'
   url: string
@@ -33,7 +40,12 @@ export interface SpotifyWidget extends BaseWidget {
   url: string
 }
 
-export type DashboardWidget = NoteWidget | CountdownWidget | YoutubeWidget | SpotifyWidget
+export type DashboardWidget =
+  | NoteWidget
+  | CountdownWidget
+  | ConditionsWidget
+  | YoutubeWidget
+  | SpotifyWidget
 
 export type WidgetType = DashboardWidget['type']
 

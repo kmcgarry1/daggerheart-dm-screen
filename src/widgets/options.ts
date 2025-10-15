@@ -13,6 +13,11 @@ export const widgetTypeOptions: WidgetTypeOption[] = [
     label: 'Countdown Tracker',
     description: 'Configurable step tracker with palette, icon, and pacing options.',
   },
+  {
+    value: 'conditions',
+    label: 'Conditions Reference',
+    description: 'Large-type rules card with customizable accent colours for table visibility.',
+  },
   { value: 'youtube', label: 'YouTube Embed', description: 'Embed a YouTube video; can set as background.' },
   { value: 'spotify', label: 'Spotify Embed', description: 'Embed a Spotify track, album, or playlist.' },
 ]

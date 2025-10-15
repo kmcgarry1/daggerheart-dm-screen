@@ -2,7 +2,16 @@ import type { Ref } from 'vue'
 
 import type { DashboardWidget, WidgetSize, WidgetType } from './types'
 
-export type WidgetUpdateKey = 'title' | 'body' | 'size' | 'url' | 'background' | 'hidden'
+export type WidgetUpdateKey =
+  | 'title'
+  | 'body'
+  | 'description'
+  | 'titleColor'
+  | 'dividerColor'
+  | 'size'
+  | 'url'
+  | 'background'
+  | 'hidden'
 export type WidgetUpdateValue = string | boolean
 
 export interface WidgetUpdatePayload {
@@ -16,6 +25,7 @@ type WidgetUpdateMap = {
 }
 
 const booleanValue = (value: WidgetUpdateValue) => Boolean(value)
+const stringValue = (value: WidgetUpdateValue) => String(value)
 
 const updateStrategies: WidgetUpdateMap = {
   note: {
@@ -32,6 +42,23 @@ const updateStrategies: WidgetUpdateMap = {
   countdown: {
     title: (widget, value) => {
       widget.title = String(value)
+    },
+    hidden: (widget, value) => {
+      widget.hidden = booleanValue(value)
+    },
+  },
+  conditions: {
+    title: (widget, value) => {
+      widget.title = stringValue(value)
+    },
+    description: (widget, value) => {
+      widget.description = stringValue(value)
+    },
+    titleColor: (widget, value) => {
+      widget.titleColor = stringValue(value)
+    },
+    dividerColor: (widget, value) => {
+      widget.dividerColor = stringValue(value)
     },
     hidden: (widget, value) => {
       widget.hidden = booleanValue(value)
