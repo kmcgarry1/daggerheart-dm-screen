@@ -35,7 +35,7 @@
         >
           <span>Title</span>
           <input
-            v-model.trim="titleInput"
+            v-model="titleInput"
             type="text"
             placeholder="Countdown title"
             class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
@@ -47,7 +47,7 @@
         >
           <span>Description</span>
           <input
-            v-model.trim="descriptionInput"
+            v-model="descriptionInput"
             type="text"
             placeholder="Describe what the countdown tracks"
             class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
@@ -74,14 +74,7 @@
           class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Icon</span>
-          <select
-            v-model="selectedIconId"
-            class="rounded-xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-2 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-          >
-            <option v-for="option in iconOptions" :key="option.id" :value="option.id">
-              {{ option.label }}
-            </option>
-          </select>
+          <TrackerIconPicker v-model="selectedIconId" :options="iconOptions" />
         </label>
       </div>
 
@@ -156,6 +149,7 @@
 import { computed, ref, watch } from 'vue'
 
 import TrackerControl from '../tracker/TrackerControl.vue'
+import TrackerIconPicker from '../tracker/TrackerIconPicker.vue'
 import { trackerIconOptions, trackerPaletteOptions } from '../tracker/registry'
 import type { TrackerCardVariant, TrackerPalette } from '../tracker/types'
 

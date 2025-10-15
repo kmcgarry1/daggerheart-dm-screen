@@ -6,14 +6,16 @@
     :height-variant="cardVariant.height"
   >
     <template v-if="title" #title>
-      {{ title }}
+      <span class="tracker-heading">
+        {{ title }}
+      </span>
     </template>
 
     <template #body>
       <div class="flex flex-col gap-3">
         <p
           v-if="description"
-          class="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+          class="tracker-subheading"
         >
           {{ description }}
         </p>
@@ -22,26 +24,35 @@
           <div
             ref="progressTrackRef"
             aria-hidden="true"
-            class="pointer-events-none absolute inset-x-0 top-1/2 h-[0.6rem] -translate-y-1/2 transform overflow-hidden rounded-full transition-colors duration-300"
-            :style="{
-              background: palette.rail,
-            }"
+            class="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 transform"
           >
-            <div
-              class="absolute left-0 top-0 h-full rounded-full transition-[width] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-              :style="{
-                width: progressWidth,
-                background: palette.fill,
-                boxShadow: `0 0 30px ${palette.glow}`,
-              }"
-            ></div>
-            <div
-              class="pointer-events-none absolute left-0 -top-[40%] h-[180%] rounded-full blur-[26px] transition-[width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-              :style="{
-                width: progressWidth,
-                background: `radial-gradient(circle, ${palette.glow} 0%, rgba(0, 0, 0, 0) 70%)`,
-              }"
-            ></div>
+            <div class="relative h-[1.6rem]">
+              <div
+                class="absolute top-1/2 h-[0.6rem] -translate-y-1/2 rounded-full transition-colors duration-300"
+                :style="{
+                  left: trackStart,
+                  width: trackLength,
+                  background: palette.rail,
+                }"
+              ></div>
+              <div
+                class="absolute top-1/2 h-[0.6rem] -translate-y-1/2 rounded-full transition-[width] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+                :style="{
+                  left: trackStart,
+                  width: progressWidth,
+                  background: palette.fill,
+                  boxShadow: `0 0 30px ${palette.glow}`,
+                }"
+              ></div>
+              <div
+                class="pointer-events-none absolute top-1/2 h-[1.6rem] -translate-y-1/2 rounded-full blur-[26px] transition-[width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+                :style="{
+                  left: trackStart,
+                  width: progressWidth,
+                  background: `radial-gradient(circle, ${palette.glow} 0%, rgba(0, 0, 0, 0) 70%)`,
+                }"
+              ></div>
+            </div>
           </div>
 
           <div
@@ -76,9 +87,12 @@
     </template>
   </DhCard>
   <div v-else v-bind="attrs" class="flex flex-col gap-3">
+    <p v-if="title" class="tracker-heading">
+      {{ title }}
+    </p>
     <p
       v-if="description"
-      class="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+      class="tracker-subheading"
     >
       {{ description }}
     </p>
@@ -86,26 +100,35 @@
       <div
         ref="progressTrackRef"
         aria-hidden="true"
-        class="pointer-events-none absolute inset-x-0 top-1/2 h-[0.6rem] -translate-y-1/2 transform overflow-hidden rounded-full transition-colors duration-300"
-        :style="{
-          background: palette.rail,
-        }"
+        class="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 transform"
       >
-        <div
-          class="absolute left-0 top-0 h-full rounded-full transition-[width] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-          :style="{
-            width: progressWidth,
-            background: palette.fill,
-            boxShadow: `0 0 30px ${palette.glow}`,
-          }"
-        ></div>
-        <div
-          class="pointer-events-none absolute left-0 -top-[40%] h-[180%] rounded-full blur-[26px] transition-[width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-          :style="{
-            width: progressWidth,
-            background: `radial-gradient(circle, ${palette.glow} 0%, rgba(0, 0, 0, 0) 70%)`,
-          }"
-        ></div>
+        <div class="relative h-[1.6rem]">
+          <div
+            class="absolute top-1/2 h-[0.6rem] -translate-y-1/2 rounded-full transition-colors duration-300"
+            :style="{
+              left: trackStart,
+              width: trackLength,
+              background: palette.rail,
+            }"
+          ></div>
+          <div
+            class="absolute top-1/2 h-[0.6rem] -translate-y-1/2 rounded-full transition-[width] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+            :style="{
+              left: trackStart,
+              width: progressWidth,
+              background: palette.fill,
+              boxShadow: `0 0 30px ${palette.glow}`,
+            }"
+          ></div>
+          <div
+            class="pointer-events-none absolute top-1/2 h-[1.6rem] -translate-y-1/2 rounded-full blur-[26px] transition-[width] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+            :style="{
+              left: trackStart,
+              width: progressWidth,
+              background: `radial-gradient(circle, ${palette.glow} 0%, rgba(0, 0, 0, 0) 70%)`,
+            }"
+          ></div>
+        </div>
       </div>
 
       <div
@@ -193,6 +216,8 @@ let burstTimer: number | null = null
 const progressTrackRef = ref<HTMLDivElement | null>(null)
 const buttonRowRef = ref<HTMLDivElement | null>(null)
 const progressWidth = ref('0px')
+const trackStart = ref('0px')
+const trackLength = ref('0px')
 
 const burstGradient = computed(
   () => `radial-gradient(circle, ${props.palette.burst} 0%, rgba(0, 0, 0, 0) 70%)`,
@@ -246,41 +271,54 @@ const handleClick = (option: TrackerOption) => {
 
 const updateProgressWidth = () => {
   if (typeof window === 'undefined') return
-  const level = clampedValue.value
   const track = progressTrackRef.value
   if (!track) return
 
-  if (level <= 0) {
+  const buttons = buttonRowRef.value?.querySelectorAll<HTMLButtonElement>('button[data-tracker-option]')
+  if (!buttons || buttons.length === 0) {
     progressWidth.value = '0px'
+    trackStart.value = '0px'
+    trackLength.value = '0px'
     return
   }
 
-  const buttons = buttonRowRef.value?.querySelectorAll<HTMLButtonElement>('button[data-tracker-option]')
-  if (!buttons || buttons.length === 0) return
-
-  const targetButton = buttons[level - 1]
   const firstButton = buttons[0]
   const lastButton = buttons[buttons.length - 1]
-  if (!targetButton || !firstButton || !lastButton) return
+  if (!firstButton || !lastButton) return
 
   const trackRect = track.getBoundingClientRect()
-  const targetRect = targetButton.getBoundingClientRect()
   const firstRect = firstButton.getBoundingClientRect()
   const lastRect = lastButton.getBoundingClientRect()
 
   const firstCenter = firstRect.left - trackRect.left + firstRect.width / 2
   const lastCenter = lastRect.left - trackRect.left + lastRect.width / 2
+  const start = Math.min(firstCenter, lastCenter)
+  const end = Math.max(firstCenter, lastCenter)
+  const length = Math.max(0, end - start)
+
+  trackStart.value = `${start}px`
+  trackLength.value = `${length}px`
+
+  const clampedLevel = Math.max(0, Math.min(buttons.length, Math.floor(clampedValue.value)))
+
+  if (length <= 0 || clampedLevel <= 0) {
+    progressWidth.value = '0px'
+    return
+  }
+
+  const targetIndex = Math.min(clampedLevel - 1, buttons.length - 1)
+  const targetButton = buttons[targetIndex]
+  if (!targetButton) {
+    progressWidth.value = '0px'
+    return
+  }
+
+  const targetRect = targetButton.getBoundingClientRect()
   const targetCenter = targetRect.left - trackRect.left + targetRect.width / 2
+  const clampedCenter = Math.max(start, Math.min(targetCenter, end))
+  const progress = Math.max(0, Math.min(clampedCenter - start, length))
 
-  const normalized =
-    lastCenter === firstCenter
-      ? 0
-      : (targetCenter - firstCenter) / (lastCenter - firstCenter)
-
-  const clampedNormalized = Math.max(0, Math.min(1, normalized))
-  const width = firstCenter + (lastCenter - firstCenter) * clampedNormalized
-
-  progressWidth.value = `${Math.max(0, Math.min(width, trackRect.width))}px`
+  progressWidth.value = `${progress}px`
 }
 
 watch(
@@ -333,3 +371,23 @@ watch(
   },
 )
 </script>
+
+<style scoped>
+.tracker-heading {
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--dh-panel-text, rgba(255, 255, 255, 0.95));
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.tracker-subheading {
+  font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--dh-panel-muted-strong, rgba(255, 255, 255, 0.75));
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+</style>
