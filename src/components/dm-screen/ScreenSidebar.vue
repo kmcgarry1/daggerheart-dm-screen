@@ -146,59 +146,14 @@
 <script lang="ts" setup>
 import { computed, ref, toRefs } from 'vue'
 
-type WidgetSize = 'small' | 'medium' | 'large'
-
-type SizeOption = {
-  value: WidgetSize
-  label: string
-  columns: number
-}
-
-type NoteWidget = {
-  id: string
-  title: string
-  body: string
-  size: WidgetSize
-  editing: boolean
-  type: 'note'
-}
-
-type CountdownWidget = {
-  id: string
-  title: string
-  description: string
-  size: WidgetSize
-  editing: boolean
-  type: 'countdown'
-}
-type YoutubeWidget = {
-  id: string
-  title: string
-  url: string
-  size: WidgetSize
-  editing: boolean
-  type: 'youtube'
-  background: boolean
-}
-
-type SpotifyWidget = {
-  id: string
-  title: string
-  url: string
-  size: WidgetSize
-  editing: boolean
-  type: 'spotify'
-}
-
-type DashboardWidget = NoteWidget | CountdownWidget | YoutubeWidget | SpotifyWidget
-
-type WidgetType = DashboardWidget['type']
-
-type WidgetTypeOption = {
-  value: WidgetType
-  label: string
-  description: string
-}
+import { getSizeLabel, getWidgetTypeOption } from '../../widgets/options'
+import type {
+  DashboardWidget,
+  SizeOption,
+  WidgetSize,
+  WidgetType,
+  WidgetTypeOption,
+} from '../../widgets/types'
 
 const props = defineProps<{
   sizeOptions: SizeOption[]
@@ -235,9 +190,7 @@ const {
   hasBackgrounds,
 } = toRefs(props)
 
-const selectedTypeOption = computed(() =>
-  widgetTypeOptions.value.find((option) => option.value === nextWidgetType.value),
-)
+const selectedTypeOption = computed(() => getWidgetTypeOption(nextWidgetType.value))
 
 const triggerUpload = () => {
   fileInputRef.value?.click()
@@ -251,13 +204,7 @@ const onBackgroundInput = (event: Event) => {
   if (target) target.value = ''
 }
 
-const sizeLabel = (size: WidgetSize) => {
-  const option = sizeOptions.value.find((entry) => entry.value === size)
-  return option ? option.label : size
-}
+const sizeLabel = (size: WidgetSize) => getSizeLabel(size)
 
-const typeLabel = (type: WidgetType) => {
-  const option = widgetTypeOptions.value.find((entry) => entry.value === type)
-  return option ? option.label : type
-}
+const typeLabel = (type: WidgetType) => getWidgetTypeOption(type)?.label ?? type
 </script>
