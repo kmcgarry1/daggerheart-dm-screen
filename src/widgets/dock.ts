@@ -19,15 +19,17 @@ export function useWidgetDock(widgets: Ref<DashboardWidget[]>, onFocus?: (id: st
   const widgetIcon = (type: WidgetType) => {
     switch (type) {
       case 'note':
-        return '📝'
+        return 'N'
       case 'countdown':
-        return '⏱️'
+        return 'CD'
+      case 'conditions':
+        return 'CR'
       case 'youtube':
-        return '▶'
+        return 'YT'
       case 'spotify':
-        return '🎵'
+        return 'SP'
       default:
-        return '📦'
+        return 'WG'
     }
   }
 

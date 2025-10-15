@@ -41,6 +41,22 @@ const createCountdownWidget = (size: WidgetSize): DashboardWidget => {
   }
 }
 
+const defaultConditionsDescription =
+  'Use this space to spotlight the ongoing effects of battle conditions, curses, or boons so the table stays aligned.'
+const defaultConditionsAccent = '#a855f7'
+
+const createConditionsWidget = (size: WidgetSize): DashboardWidget => ({
+  id: createId(),
+  title: 'Condition Rules',
+  description: defaultConditionsDescription,
+  titleColor: defaultConditionsAccent,
+  dividerColor: defaultConditionsAccent,
+  size,
+  editing: true,
+  type: 'conditions',
+  hidden: false,
+})
+
 const createYoutubeWidget = (size: WidgetSize): DashboardWidget => ({
   id: createId(),
   title: 'YouTube',
@@ -65,6 +81,7 @@ const createSpotifyWidget = (size: WidgetSize): DashboardWidget => ({
 const widgetCreators: Record<WidgetType, (size: WidgetSize) => DashboardWidget> = {
   note: createNoteWidget,
   countdown: createCountdownWidget,
+  conditions: createConditionsWidget,
   youtube: createYoutubeWidget,
   spotify: createSpotifyWidget,
 }

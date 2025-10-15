@@ -21,8 +21,8 @@
           :size-options="sizeOptions"
           :span-class="spanClassForSize(widget.size)"
           :active="widget.id === activeWidgetId"
-          :show-title-input="widget.type === 'note'"
-          :fallback-title="widget.type === 'countdown' ? 'Countdown' : 'Untitled Widget'"
+          :show-title-input="widget.type === 'note' || widget.type === 'conditions'"
+          :fallback-title="widget.type === 'countdown' ? 'Countdown' : widget.type === 'conditions' ? 'Condition Rules' : 'Untitled Widget'"
           @toggle-edit="$emit('toggle-edit', widget.id)"
           @remove="$emit('remove-widget', widget.id)"
           @update-widget="(payload) => emitUpdate(widget.id, payload)"
@@ -37,6 +37,11 @@
             :config="widget.countdown"
             :editing="widget.editing"
             @update:config="$emit('update-countdown', { id: widget.id, ...$event })"
+          />
+          <ConditionsRulesWidgetCard
+            v-else-if="widget.type === 'conditions'"
+            :widget="widget"
+            @update="(payload) => emitUpdate(widget.id, payload)"
           />
           <YoutubeWidgetPanel
             v-else-if="widget.type === 'youtube'"
@@ -58,6 +63,7 @@
 import { computed, toRefs } from 'vue'
 
 import CountdownWidgetCard from '../countdown/CountdownWidgetCard.vue'
+import ConditionsRulesWidgetCard from '../conditions/ConditionsRulesWidgetCard.vue'
 import type { CountdownConfig } from '../countdown/types'
 import WidgetCardShell from './widgets/WidgetCardShell.vue'
 import NoteWidgetPanel from './widgets/NoteWidgetPanel.vue'
