@@ -17,14 +17,45 @@
         />
       </div>
 
-      <div :class="gridClasses">
+      <ScreenWorkspace
+        :widgets="widgets"
+        :active-widget-id="activeWidgetId"
+        :size-options="sizeOptions"
+        :span-class-for-size="widgetSpanClass"
+        :collapsed="widgetsCollapsed"
+        @toggle-edit="toggleEditing"
+        @remove-widget="removeWidget"
+        @update-widget="handleWidgetUpdate"
+        @update-countdown="handleCountdownUpdate"
+        @toggle-collapsed="toggleWidgets"
+      />
+
+      <div
+        v-if="minimizedWidgets.length"
+        class="fixed bottom-4 right-4 z-20 flex max-w-[80vw] flex-wrap items-center gap-2 rounded-2xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)]/90 p-2 shadow-xl backdrop-blur"
+      >
+        <button
+          v-for="m in minimizedWidgets"
+          :key="m.id"
+          type="button"
+          class="flex items-center gap-2 rounded-full border border-[color:var(--dh-panel-border)] bg-[color:var(--dh-panel-bg)] px-3 py-1.5 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm hover:-translate-y-0.5 hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
+          @click="restoreWidget(m.id)"
+        >
+          <span class="text-base">{{ widgetIcon(m.type) }}</span>
+          <span class="max-w-[40ch] truncate">
+            {{ m.type === 'countdown' ? countdownDockLabel(m) : m.title || dockLabel(m.type) }}
+          </span>
+        </button>
+      </div>
+
+      <Teleport to="body">
         <Transition
-          enter-active-class="transition duration-400 transform"
-          enter-from-class="-translate-x-4 opacity-0"
-          enter-to-class="translate-x-0 opacity-100"
-          leave-active-class="transition duration-300 transform"
-          leave-from-class="translate-x-0 opacity-100"
-          leave-to-class="-translate-x-4 opacity-0"
+          enter-active-class="transition duration-300 ease-out"
+          enter-from-class="opacity-0"
+          enter-to-class="opacity-100"
+          leave-active-class="transition duration-200 ease-in"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
         >
           <ScreenSidebar
             v-if="!sidebarCollapsed"
@@ -43,32 +74,10 @@
             @clear-backgrounds="clearBackgrounds"
             @focus-widget="focusWidget"
             @upload-backgrounds="handleBackgroundUpload"
+            @close="toggleSidebar"
           />
         </Transition>
-
-        <ScreenWorkspace
-          :widgets="widgets"
-          :active-widget-id="activeWidgetId"
-          :size-options="sizeOptions"
-          :span-class-for-size="widgetSpanClass"
-          :collapsed="widgetsCollapsed"
-          @toggle-edit="toggleEditing"
-          @remove-widget="removeWidget"
-          @update-widget="handleWidgetUpdate"
-          @update-countdown="handleCountdownUpdate"
-          @toggle-collapsed="toggleWidgets"
-        />
-
-        <div v-if="minimizedWidgets.length"
-          class="fixed bottom-4 right-4 z-20 flex max-w-[80vw] flex-wrap items-center gap-2 rounded-2xl border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)]/90 p-2 shadow-xl backdrop-blur">
-          <button v-for="m in minimizedWidgets" :key="m.id" type="button"
-            class="flex items-center gap-2 rounded-full border border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-1.5 text-sm font-semibold text-[color:var(--dh-panel-text)] shadow-sm hover:-translate-y-0.5 hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
-            @click="restoreWidget(m.id)">
-            <span class="text-base">{{ widgetIcon(m.type) }}</span>
-            <span class="max-w-[40ch] truncate">{{ m.type === 'countdown' ? countdownDockLabel(m) : (m.title || dockLabel(m.type)) }}</span>
-          </button>
-        </div>
-      </div>
+      </Teleport>
 
       <ScreenFloatingControls
         :sidebar-collapsed="sidebarCollapsed"
@@ -156,12 +165,4 @@ const youtubeBackgroundSrc = computed(() => {
   const embed = computeYouTubeEmbed((yt as any).url)
   return embed || null
 })
-
-const gridClasses = computed(
-  () =>
-    [
-      'grid gap-6 transition-all duration-500',
-      sidebarCollapsed.value ? 'lg:grid-cols-1' : 'lg:grid-cols-[320px_minmax(0,1fr)]',
-    ].join(' '),
-)
 </script>
