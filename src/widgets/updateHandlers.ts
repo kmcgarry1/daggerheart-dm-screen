@@ -20,14 +20,20 @@ export interface WidgetUpdatePayload {
   value: WidgetUpdateValue
 }
 
+type WidgetUpdateHandler<K extends WidgetType> = (
+  widget: Extract<DashboardWidget, { type: K }>,
+  value: WidgetUpdateValue,
+  widgets: Ref<DashboardWidget[]>,
+) => void
+
 type WidgetUpdateMap = {
-  [K in WidgetType]?: Partial<Record<WidgetUpdateKey, (widget: Extract<DashboardWidget, { type: K }>, value: WidgetUpdateValue, widgets: Ref<DashboardWidget[]>) => void>>
+  [K in WidgetType]: Partial<Record<WidgetUpdateKey, WidgetUpdateHandler<K>>>
 }
 
 const booleanValue = (value: WidgetUpdateValue) => Boolean(value)
 const stringValue = (value: WidgetUpdateValue) => String(value)
 
-const updateStrategies: WidgetUpdateMap = {
+const updateStrategies = {
   note: {
     title: (widget, value) => {
       widget.title = String(value)
@@ -101,7 +107,7 @@ const updateStrategies: WidgetUpdateMap = {
       widget.hidden = booleanValue(value)
     },
   },
-}
+} satisfies WidgetUpdateMap
 
 export const widgetSpanClass = (size: WidgetSize) => {
   switch (size) {
@@ -125,7 +131,32 @@ export function applyWidgetUpdate(widgets: Ref<DashboardWidget[]>, payload: Widg
     return
   }
 
-  const handlers = updateStrategies[widget.type]
-  const handler = handlers?.[payload.key]
-  handler?.(widget as any, payload.value, widgets)
+  const invoke = <K extends WidgetType>(
+    type: K,
+    target: Extract<DashboardWidget, { type: K }>,
+  ) => {
+    const handlers = updateStrategies[type]
+    const handler = handlers[payload.key]
+    handler?.(target, payload.value, widgets)
+  }
+
+  switch (widget.type) {
+    case 'note':
+      invoke('note', widget)
+      break
+    case 'countdown':
+      invoke('countdown', widget)
+      break
+    case 'conditions':
+      invoke('conditions', widget)
+      break
+    case 'youtube':
+      invoke('youtube', widget)
+      break
+    case 'spotify':
+      invoke('spotify', widget)
+      break
+    default:
+      break
+  }
 }

@@ -22,6 +22,8 @@ const props = defineProps<{
   value: number
 }>()
 
+const value = computed(() => props.value)
+
 const emit = defineEmits<{
   (e: 'update:value', value: number): void
 }>()

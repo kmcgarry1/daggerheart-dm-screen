@@ -1,4 +1,5 @@
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import type { CSSProperties } from 'vue'
 import { load, save } from '../utils/storage'
 
 export type BackgroundSlide = { id: string; url: string }
@@ -6,8 +7,9 @@ export type BackgroundLayer = { id: string; url: string }
 
 let bgCounter = 0
 const createBackgroundId = () => {
-  if (typeof crypto !== 'undefined' && typeof (crypto as any).randomUUID === 'function') {
-    return `bg-${(crypto as any).randomUUID()}`
+  const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined
+  if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
+    return `bg-${cryptoApi.randomUUID()}`
   }
   bgCounter += 1
   return `bg-${Date.now()}-${bgCounter}`
@@ -22,7 +24,7 @@ export function useBackgrounds() {
 
   const currentSlide = computed(() => backgroundImages.value[activeBackgroundIndex.value] ?? null)
 
-  const screenStyle = computed(() => {
+  const screenStyle = computed<CSSProperties>(() => {
     const gradient = baseGradient.value
     const slide = currentSlide.value
     if (!slide) {
@@ -30,14 +32,14 @@ export function useBackgrounds() {
         backgroundImage: gradient,
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
-      } as any
+      }
     }
     return {
       backgroundImage: `${gradient}, url('${slide.url}')`,
       backgroundSize: 'cover, cover',
       backgroundPosition: 'center, center',
       backgroundRepeat: 'no-repeat, no-repeat',
-    } as any
+    }
   })
 
   let backgroundTimer: number | null = null

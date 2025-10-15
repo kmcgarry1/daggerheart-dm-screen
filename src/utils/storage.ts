@@ -19,15 +19,18 @@ export function load<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(`${NAMESPACE}:${key}`)
     if (!raw) return fallback
-    const parsed = JSON.parse(raw) as Stored<T> | T
-    if (parsed && typeof parsed === 'object' && 'v' in (parsed as any) && 'data' in (parsed as any)) {
-      return (parsed as Stored<T>).data
+    const parsed = JSON.parse(raw) as unknown
+    if (isStored<T>(parsed)) {
+      return parsed.data
     }
     return parsed as T
   } catch {
     return fallback
   }
 }
+
+const isStored = <T>(value: unknown): value is Stored<T> =>
+  typeof value === 'object' && value !== null && 'v' in value && 'data' in value
 
 export function remove(key: string) {
   if (typeof localStorage === 'undefined') return
