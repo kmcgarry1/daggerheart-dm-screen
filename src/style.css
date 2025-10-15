@@ -323,10 +323,25 @@
 }
 
 .dh-ambient .dh-card {
-    animation: dh-ambient-card 240s ease-in-out infinite;
-    animation-delay: 10s;
-    transform-origin: center;
-    will-change: transform, box-shadow;
+    overflow: hidden;
+}
+
+.dh-ambient .dh-card::after {
+    content: "";
+    position: absolute;
+    inset: -40% -120%;
+    background: linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0),
+        var(--dh-card-sheen) 45%,
+        rgba(255, 255, 255, 0) 60%
+    );
+    transform: translateX(-120%) skewX(-18deg);
+    opacity: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    z-index: 3;
+    animation: dh-ambient-card-sheen 18s ease-in-out infinite;
 }
 
 .dh-ambient :where(h1, h2, h3, h4, h5, h6, p, label, dt, dd, li, strong) {
@@ -363,32 +378,25 @@
     }
 }
 
-@keyframes dh-ambient-card {
+@keyframes dh-ambient-card-sheen {
     0%,
-    92%,
+    58% {
+        transform: translateX(-120%) skewX(-18deg);
+        opacity: 0;
+    }
+
+    62% {
+        opacity: 0.4;
+    }
+
+    68% {
+        transform: translateX(120%) skewX(-18deg);
+        opacity: 0;
+    }
+
     100% {
-        transform: translate3d(0, 0, 0) scale(1);
-        box-shadow: 0 18px 40px var(--dh-shadow);
-    }
-
-    2% {
-        transform: translate3d(-0.6%, -0.4%, 0) scale(1.016);
-        box-shadow: 0 22px 54px var(--dh-ambient-shadow-strong);
-    }
-
-    4% {
-        transform: translate3d(0.8%, 0.6%, 0) scale(1.012);
-        box-shadow: 0 20px 48px var(--dh-ambient-shadow-soft);
-    }
-
-    6% {
-        transform: translate3d(-0.4%, 0.4%, 0) scale(1.01);
-        box-shadow: 0 20px 46px var(--dh-ambient-shadow-soft);
-    }
-
-    8% {
-        transform: translate3d(0.2%, -0.3%, 0) scale(1.006);
-        box-shadow: 0 18px 42px var(--dh-shadow);
+        transform: translateX(120%) skewX(-18deg);
+        opacity: 0;
     }
 }
 
@@ -426,6 +434,10 @@
     .dh-ambient .dh-background-layer,
     .dh-ambient .dh-card,
     .dh-ambient :where(h1, h2, h3, h4, h5, h6, p, label, dt, dd, li, strong) {
+        animation: none !important;
+    }
+
+    .dh-ambient .dh-card::after {
         animation: none !important;
     }
 }

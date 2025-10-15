@@ -82,6 +82,7 @@ const computedStyle = computed(() => ({
     rgba(255, 255, 255, 0.55),
     rgba(255, 255, 255, 0.08)
   );
+  --dh-card-sheen: rgba(255, 255, 255, 0.35);
 }
 
 :global(:root[data-theme='dark']) {
@@ -90,5 +91,6 @@ const computedStyle = computed(() => ({
     rgba(123, 146, 220, 0.2),
     rgba(56, 73, 132, 0.12)
   );
+  --dh-card-sheen: rgba(173, 197, 255, 0.16);
 }
 </style>
