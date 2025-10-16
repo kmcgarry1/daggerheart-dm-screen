@@ -1,23 +1,5 @@
 import type { TrackerPalette, TrackerButtonPalette, TrackerButtonState } from './types'
-
-const hexToRgb = (hex: string): [number, number, number] => {
-  const normalized = hex.replace('#', '')
-
-  if (![3, 6].includes(normalized.length)) {
-    throw new Error(`Unsupported hex color: ${hex}. Expected formats: '#fff' or '#ffffff'.`)
-  }
-
-  const values =
-    normalized.length === 3
-      ? normalized
-          .split('')
-          .map((char) => `${char}${char}`)
-      : normalized.match(/.{2}/g) ?? []
-
-  const [r, g, b] = values.map((value) => parseInt(value, 16)) as [number, number, number]
-
-  return [r, g, b]
-}
+import { hexToRgb } from '@/shared/utils/color'
 
 const withAlpha = (hex: string, alpha: number) => {
   const [r, g, b] = hexToRgb(hex)

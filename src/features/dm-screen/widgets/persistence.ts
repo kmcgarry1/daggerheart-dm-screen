@@ -1,15 +1,30 @@
 import { ref, watch } from 'vue'
 
-import { load, save } from '@/shared/utils'
+import { load, reportError, save } from '@/shared/utils'
 import type { DashboardWidget } from './types'
 
 export type WidgetInitializer = () => DashboardWidget[]
 
 export function useWidgetPersistence(createInitialWidgets: WidgetInitializer) {
-  const initialWidgets = createInitialWidgets().map((widget) => ({ ...widget }))
+  let initialWidgets: DashboardWidget[] = []
+  try {
+    initialWidgets = createInitialWidgets().map((widget) => ({ ...widget }))
+  } catch (error) {
+    reportError('We could not prepare default widgets.', error, {
+      context: 'widgets:persistence:initial',
+    })
+    initialWidgets = []
+  }
+
   const widgets = ref<DashboardWidget[]>(load<DashboardWidget[]>('widgets', initialWidgets))
 
-  watch(widgets, (value) => save('widgets', value), { deep: true })
+  watch(
+    widgets,
+    (value) => {
+      save('widgets', value)
+    },
+    { deep: true },
+  )
 
   return { widgets }
 }

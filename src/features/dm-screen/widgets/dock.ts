@@ -3,15 +3,30 @@ import type { Ref } from 'vue'
 
 import { getWidgetTypeLabel } from './options'
 import type { DashboardWidget, WidgetType } from './types'
+import { reportError } from '@/shared/utils'
+
+const dockContext = (action: string) => `widget-dock:${action}`
 
 export function useWidgetDock(widgets: Ref<DashboardWidget[]>, onFocus?: (id: string) => void) {
   const minimizedWidgets = computed(() => widgets.value.filter((widget) => widget.hidden))
 
   const restoreWidget = (id: string) => {
-    const widget = widgets.value.find((entry) => entry.id === id)
-    if (!widget) return
-    widget.hidden = false
-    onFocus?.(id)
+    try {
+      const widget = widgets.value.find((entry) => entry.id === id)
+      if (!widget) {
+        reportError('We could not restore that widget.', new Error(`Missing widget: ${id}`), {
+          context: dockContext(`restore:${id}`),
+          oncePerContext: true,
+        })
+        return
+      }
+      widget.hidden = false
+      onFocus?.(id)
+    } catch (error) {
+      reportError('We could not restore that widget.', error, {
+        context: dockContext('restore'),
+      })
+    }
   }
 
   const dockLabel = (type: WidgetType) => getWidgetTypeLabel(type)
