@@ -29,9 +29,14 @@ export function load<T>(key: string, fallback: T): T {
   }
 }
 
-const isStored = <T>(value: unknown): value is Stored<T> =>
-  typeof value === 'object' && value !== null && 'v' in value && 'data' in value
-
+const isStored = <T>(value: unknown): value is Stored<T> => {
+  if (typeof value !== 'object' || value === null) return false;
+  if (!Object.prototype.hasOwnProperty.call(value, 'v')) return false;
+  if (!Object.prototype.hasOwnProperty.call(value, 'data')) return false;
+  // @ts-ignore: index signature
+  if (typeof (value as any).v !== 'number') return false;
+  return true;
+}
 export function remove(key: string) {
   if (typeof localStorage === 'undefined') return
   try {
