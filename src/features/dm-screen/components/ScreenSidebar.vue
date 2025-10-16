@@ -20,7 +20,7 @@
       <div class="flex flex-col gap-8 pt-6">
         <section class="flex flex-col gap-4">
           <header class="space-y-1">
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--dh-panel-muted)]">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--dh-panel-muted)]">
               Widget Library
             </p>
             <h2 class="text-xl font-semibold">Create Dashboard Widget</h2>
@@ -46,12 +46,12 @@
                 class="text-xs font-medium"
                 :class="option.value === nextWidgetSize ? 'opacity-80' : 'text-[color:var(--dh-panel-muted)]'"
               >
-                {{ option.columns }} columns
+                {{ option.columns }} {{ option.columns === 1 ? 'column' : 'columns' }}
               </span>
             </button>
           </div>
           <label
-            class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+            class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
           >
             <span>Widget Type</span>
             <select
@@ -78,7 +78,7 @@
 
         <section class="flex flex-col gap-4">
           <header class="space-y-1">
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--dh-panel-muted)]">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--dh-panel-muted)]">
               Atmosphere
             </p>
             <h2 class="text-xl font-semibold">Dashboard Backdrop</h2>
@@ -98,13 +98,13 @@
             @change="onBackgroundInput"
           />
           <div class="flex flex-col gap-3">
-            <button type="button" class="dh-toggle justify-center" @click="triggerUpload">
+            <button type="button" class="dh-toggle dh-toggle--subtle justify-center" @click="triggerUpload">
               Upload Background Images
             </button>
             <button
               v-if="hasBackgrounds"
               type="button"
-              class="dh-pill text-center"
+              class="dh-pill dh-pill--muted text-center"
               @click="$emit('clear-backgrounds')"
             >
               Clear ({{ backgroundCount }})
@@ -114,7 +114,7 @@
 
         <section class="flex flex-col gap-4" aria-live="polite">
           <header class="space-y-1">
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--dh-panel-muted)]">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--dh-panel-muted)]">
               Dashboard Content
             </p>
             <h2 class="text-xl font-semibold">

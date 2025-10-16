@@ -12,7 +12,7 @@
     </div>
     <footer
       v-if="$slots.footer"
-      class="dh-card__footer relative mt-auto text-xs font-semibold uppercase tracking-[0.18em]"
+      class="dh-card__footer relative mt-auto text-xs font-semibold uppercase tracking-[0.12em]"
     >
       <slot name="footer"></slot>
     </footer>
@@ -71,10 +71,10 @@ const computedStyle = computed(() => ({
   color: var(--dh-panel-text);
 }
 
-.dh-card__footer {
-  color: var(--dh-panel-muted);
-  letter-spacing: 0.18em;
-}
+  .dh-card__footer {
+    color: var(--dh-panel-muted);
+    letter-spacing: 0.12em;
+  }
 
 :global(:root) {
   --dh-card-overlay: linear-gradient(
