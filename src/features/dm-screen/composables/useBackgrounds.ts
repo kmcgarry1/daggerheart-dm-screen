@@ -134,8 +134,15 @@ export function useBackgrounds() {
         }
         try {
           const timer = window.setTimeout(() => {
-            backgroundLayers.value = backgroundLayers.value.filter((layer) => layer.id !== previous.id)
-            fadeTimers.delete(previous.id)
+            try {
+              backgroundLayers.value = backgroundLayers.value.filter((layer) => layer.id !== previous.id)
+              fadeTimers.delete(previous.id)
+            } catch (error) {
+              reportError('We could not update the background transition.', error, {
+                context: backgroundContext('transition'),
+                tone: 'warning',
+              })
+            }
           }, crossfadeMs)
           fadeTimers.set(previous.id, timer)
         } catch (error) {
