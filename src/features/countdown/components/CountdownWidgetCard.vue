@@ -15,7 +15,7 @@
 
     <div v-if="editing" class="grid gap-4 md:grid-cols-2">
       <label
-        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Title</span>
         <input
@@ -28,7 +28,7 @@
       </label>
 
       <label
-        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Description</span>
         <input
@@ -41,7 +41,7 @@
       </label>
 
       <label
-        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Palette</span>
         <select
@@ -56,7 +56,7 @@
       </label>
 
       <label
-        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Icon</span>
         <select
@@ -71,7 +71,7 @@
       </label>
 
       <label
-        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Total Steps</span>
         <input
@@ -85,7 +85,7 @@
       </label>
 
       <label
-        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Current Progress</span>
         <select
@@ -100,7 +100,7 @@
       </label>
 
       <label
-        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Card Layout</span>
         <select
@@ -115,7 +115,7 @@
       </label>
 
       <label
-        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Button Size</span>
         <select

@@ -33,7 +33,7 @@
     </div>
     <p
       v-else
-      class="rounded-xl border border-dashed border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-4 text-center text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+      class="rounded-xl border border-dashed border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] px-3 py-4 text-center text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       role="status"
     >
       No icons match "{{ searchQuery }}"

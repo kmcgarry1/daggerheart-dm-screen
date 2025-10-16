@@ -1,7 +1,7 @@
 <template>
   <section class="flex flex-col gap-5">
     <header class="space-y-1">
-      <p class="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--dh-panel-muted)]">
+      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--dh-panel-muted)]">
         Countdown Widget
       </p>
       <h3 class="text-lg font-semibold text-[color:var(--dh-panel-text)]">
@@ -29,7 +29,7 @@
 
       <div class="grid gap-4 md:grid-cols-2">
         <label
-          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Title</span>
           <input
@@ -42,7 +42,7 @@
         </label>
 
         <label
-          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Description</span>
           <input
@@ -57,7 +57,7 @@
 
       <div class="grid gap-4 md:grid-cols-2">
         <label
-          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Palette</span>
           <select
@@ -72,7 +72,7 @@
         </label>
 
         <label
-          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Icon</span>
           <TrackerIconPicker v-model="selectedIconId" :options="availableIconOptions" />
@@ -81,7 +81,7 @@
 
       <div class="grid gap-4 md:grid-cols-2">
         <label
-          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Total Steps</span>
           <input
@@ -95,7 +95,7 @@
         </label>
 
         <label
-          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Current Progress</span>
           <select
@@ -112,7 +112,7 @@
 
       <div class="grid gap-4 md:grid-cols-2">
         <label
-          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Card Layout</span>
           <select
@@ -127,7 +127,7 @@
         </label>
 
         <label
-          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+          class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
         >
           <span>Button Size</span>
           <select
