@@ -165,6 +165,6 @@ const youtubeBackgroundSrc = computed(() => {
   const yt = widgets.value.find(isYoutubeBackgroundWidget)
   if (!yt) return null
   const embed = computeYouTubeEmbed(yt.url)
-  return embed ?? null
+  return embed || null
 })
 </script>
