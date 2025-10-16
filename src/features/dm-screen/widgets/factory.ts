@@ -11,7 +11,7 @@ import {
   defaultTitle,
   type CountdownConfig,
 } from '@/features/countdown'
-import { createIdGenerator } from '@/shared/utils'
+import { createIdGenerator, reportError } from '@/shared/utils'
 
 const createWidgetId = createIdGenerator('widget')
 
@@ -90,6 +90,8 @@ export interface WidgetFactoryContext {
   focusNoteTitle: (id: string) => void
 }
 
+const widgetContext = (action: string) => `widget-factory:${action}`
+
 export function useWidgetFactory(context: WidgetFactoryContext) {
   const nextWidgetSize = ref<WidgetSize>('medium')
   const nextWidgetType = ref<WidgetType>('note')
@@ -97,33 +99,69 @@ export function useWidgetFactory(context: WidgetFactoryContext) {
   const nextWidgetSizeLabel = computed(() => getSizeLabel(nextWidgetSize.value))
 
   const addWidget = () => {
-    const creator = widgetCreators[nextWidgetType.value]
-    const widget = creator ? creator(nextWidgetSize.value) : createNoteWidget(nextWidgetSize.value)
-    context.widgets.value = [widget, ...context.widgets.value]
-    context.activeWidgetId.value = widget.id
-    if (widget.type === 'note') {
-      nextTick(() => context.focusNoteTitle(widget.id))
+    try {
+      const creator = widgetCreators[nextWidgetType.value]
+      const widget = creator ? creator(nextWidgetSize.value) : createNoteWidget(nextWidgetSize.value)
+      context.widgets.value = [widget, ...context.widgets.value]
+      context.activeWidgetId.value = widget.id
+      if (widget.type === 'note') {
+        nextTick(() => context.focusNoteTitle(widget.id))
+      }
+    } catch (error) {
+      reportError('We could not create that widget.', error, {
+        context: widgetContext('add'),
+      })
     }
   }
 
   const handleWidgetUpdate = (payload: WidgetUpdatePayload) => {
-    applyWidgetUpdate(context.widgets, payload)
+    try {
+      applyWidgetUpdate(context.widgets, payload)
+    } catch (error) {
+      reportError('We could not update that widget.', error, {
+        context: widgetContext('update'),
+      })
+    }
   }
 
   const handleCountdownUpdate = (payload: { id: string; config: CountdownConfig; title: string; description: string }) => {
-    const widget = context.widgets.value.find((entry) => entry.id === payload.id)
-    if (!widget || widget.type !== 'countdown') return
-    widget.countdown = payload.config
-    widget.title = payload.title.trim() || defaultTitle
-    widget.description = payload.description.trim()
+    try {
+      const widget = context.widgets.value.find((entry) => entry.id === payload.id)
+      if (!widget || widget.type !== 'countdown') {
+        reportError('We could not find that countdown widget.', new Error(`Missing widget: ${payload.id}`), {
+          context: widgetContext(`countdown:${payload.id}`),
+          oncePerContext: true,
+        })
+        return
+      }
+      widget.countdown = payload.config
+      widget.title = payload.title.trim() || defaultTitle
+      widget.description = payload.description.trim()
+    } catch (error) {
+      reportError('We could not update that countdown.', error, {
+        context: widgetContext('countdown'),
+      })
+    }
   }
 
   const handleSizeSelect = (size: WidgetSize) => {
-    nextWidgetSize.value = size
+    try {
+      nextWidgetSize.value = size
+    } catch (error) {
+      reportError('We could not change the widget size.', error, {
+        context: widgetContext('size'),
+      })
+    }
   }
 
   const handleTypeSelect = (type: WidgetType) => {
-    nextWidgetType.value = type
+    try {
+      nextWidgetType.value = type
+    } catch (error) {
+      reportError('We could not change the widget type.', error, {
+        context: widgetContext('type'),
+      })
+    }
   }
 
   return {

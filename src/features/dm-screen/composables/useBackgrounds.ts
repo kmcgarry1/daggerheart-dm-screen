@@ -1,11 +1,26 @@
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { CSSProperties } from 'vue'
-import { createIdGenerator, load, save } from '@/shared/utils'
+
+import { createIdGenerator, load, save, reportError } from '@/shared/utils'
 
 export type BackgroundSlide = { id: string; url: string }
 export type BackgroundLayer = { id: string; url: string }
 
 const createBackgroundId = createIdGenerator('bg')
+
+const backgroundContext = (action: string) => `backgrounds:${action}`
+
+const releaseObjectUrl = (url: string, action: string) => {
+  try {
+    URL.revokeObjectURL(url)
+  } catch (error) {
+    reportError('We could not release a background image.', error, {
+      context: backgroundContext(action),
+      oncePerContext: true,
+      tone: 'warning',
+    })
+  }
+}
 
 export function useBackgrounds() {
   const backgroundImages = ref<BackgroundSlide[]>(load<BackgroundSlide[]>('backgroundImages', []))
@@ -62,14 +77,21 @@ export function useBackgrounds() {
 
   const handleBackgroundUpload = (files: File[]) => {
     if (!files.length) return
-    const nextSlides = files.map((file) => ({ id: createBackgroundId(), url: URL.createObjectURL(file) }))
-    backgroundImages.value = [...nextSlides, ...backgroundImages.value]
-    activeBackgroundIndex.value = 0
-    startBackgroundTimer()
+    try {
+      const nextSlides = files.map((file) => ({ id: createBackgroundId(), url: URL.createObjectURL(file) }))
+      backgroundImages.value = [...nextSlides, ...backgroundImages.value]
+      activeBackgroundIndex.value = 0
+      startBackgroundTimer()
+    } catch (error) {
+      reportError('We could not load those background images.', error, {
+        context: backgroundContext('upload'),
+        tone: 'warning',
+      })
+    }
   }
 
   const clearBackgrounds = () => {
-    backgroundImages.value.forEach((slide) => URL.revokeObjectURL(slide.url))
+    backgroundImages.value.forEach((slide) => releaseObjectUrl(slide.url, 'revoke'))
     backgroundImages.value = []
     activeBackgroundIndex.value = 0
     stopBackgroundTimer()
@@ -110,11 +132,18 @@ export function useBackgrounds() {
         if (fadeTimers.has(previous.id)) {
           window.clearTimeout(fadeTimers.get(previous.id)!)
         }
-        const timer = window.setTimeout(() => {
-          backgroundLayers.value = backgroundLayers.value.filter((layer) => layer.id !== previous.id)
-          fadeTimers.delete(previous.id)
-        }, crossfadeMs)
-        fadeTimers.set(previous.id, timer)
+        try {
+          const timer = window.setTimeout(() => {
+            backgroundLayers.value = backgroundLayers.value.filter((layer) => layer.id !== previous.id)
+            fadeTimers.delete(previous.id)
+          }, crossfadeMs)
+          fadeTimers.set(previous.id, timer)
+        } catch (error) {
+          reportError('We could not update the background transition.', error, {
+            context: backgroundContext('transition'),
+            tone: 'warning',
+          })
+        }
       }
       if (backgroundLayers.value.length > 2) {
         const extras = backgroundLayers.value.slice(2)
@@ -137,7 +166,7 @@ export function useBackgrounds() {
   })
   onBeforeUnmount(() => {
     stopBackgroundTimer()
-    backgroundImages.value.forEach((slide) => URL.revokeObjectURL(slide.url))
+    backgroundImages.value.forEach((slide) => releaseObjectUrl(slide.url, 'teardown'))
     clearFadeTimers()
   })
 
