@@ -39,9 +39,8 @@
               type="button"
               class="dh-toggle px-3 py-2"
               @click="$emit('toggle-edit', widget.id)"
-              :aria-label="widget.editing ? 'Save widget' : 'Edit widget'"
             >
-              <span class="sr-only">{{ widget.editing ? 'Save' : 'Edit' }}</span>
+              <span class="sr-only">{{ widget.editing ? 'Save widget' : 'Edit widget' }}</span>
               <svg
                 v-if="widget.editing"
                 xmlns="http://www.w3.org/2000/svg"
@@ -75,9 +74,8 @@
               type="button"
               class="dh-toggle border border-rose-300/60 bg-rose-500/10 px-3 py-2 text-rose-400 hover:border-rose-300"
               @click="$emit('remove', widget.id)"
-              aria-label="Delete widget"
             >
-              <span class="sr-only">Delete</span>
+              <span class="sr-only">Delete widget</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
