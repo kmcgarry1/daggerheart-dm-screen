@@ -1,19 +1,11 @@
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { CSSProperties } from 'vue'
-import { load, save } from '@/shared/utils'
+import { createIdGenerator, load, save } from '@/shared/utils'
 
 export type BackgroundSlide = { id: string; url: string }
 export type BackgroundLayer = { id: string; url: string }
 
-let bgCounter = 0
-const createBackgroundId = () => {
-  const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined
-  if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
-    return `bg-${cryptoApi.randomUUID()}`
-  }
-  bgCounter += 1
-  return `bg-${Date.now()}-${bgCounter}`
-}
+const createBackgroundId = createIdGenerator('bg')
 
 export function useBackgrounds() {
   const backgroundImages = ref<BackgroundSlide[]>(load<BackgroundSlide[]>('backgroundImages', []))
