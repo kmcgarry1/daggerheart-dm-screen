@@ -53,23 +53,11 @@ export function useWidgets() {
   }
 
   const handleWidgetUpdate = (payload: WidgetUpdatePayload) => {
-    try {
-      factory.handleWidgetUpdate(payload)
-    } catch (error) {
-      reportError('We could not apply that widget update.', error, {
-        context: 'widgets:update',
-      })
-    }
+    factory.handleWidgetUpdate(payload)
   }
 
   const handleCountdownUpdate = (payload: { id: string; config: CountdownConfig; title: string; description: string }) => {
-    try {
-      factory.handleCountdownUpdate(payload)
-    } catch (error) {
-      reportError('We could not update that countdown.', error, {
-        context: 'widgets:countdown',
-      })
-    }
+    factory.handleCountdownUpdate(payload)
   }
 
   return {
