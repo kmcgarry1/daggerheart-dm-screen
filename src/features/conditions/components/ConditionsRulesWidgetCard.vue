@@ -113,6 +113,8 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
+import { hexToRgb } from '@/shared/utils/color'
+
 import type { ConditionsWidget, WidgetUpdateKey } from '@/features/dm-screen/widgets'
 
 const props = defineProps<{
@@ -181,31 +183,7 @@ const buttonClass = (selected: string | undefined, value: string) =>
     : 'border-[color:var(--dh-panel-border)] bg-[var(--dh-panel-bg)] text-[color:var(--dh-panel-text)] shadow-sm'
 
 const hexToShadow = (hex: string) => {
-  const parsed = parseHex(hex)
-  return `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, 0.45)`
-}
-
-const parseHex = (hex: string) => {
-  const clean = hex.replace('#', '').trim()
-  const fallback = { r: 168, g: 85, b: 247 }
-  if (clean.length === 3) {
-    const r = parseInt(clean.charAt(0) + clean.charAt(0), 16)
-    const g = parseInt(clean.charAt(1) + clean.charAt(1), 16)
-    const b = parseInt(clean.charAt(2) + clean.charAt(2), 16)
-    if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
-      return fallback
-    }
-    return { r, g, b }
-  }
-  if (clean.length < 6) {
-    return fallback
-  }
-  const r = parseInt(clean.slice(0, 2), 16)
-  const g = parseInt(clean.slice(2, 4), 16)
-  const b = parseInt(clean.slice(4, 6), 16)
-  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
-    return fallback
-  }
-  return { r, g, b }
+  const [r, g, b] = hexToRgb(hex, [168, 85, 247])
+  return `rgba(${r}, ${g}, ${b}, 0.45)`
 }
 </script>
