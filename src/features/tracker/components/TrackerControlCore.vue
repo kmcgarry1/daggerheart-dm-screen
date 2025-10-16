@@ -2,7 +2,7 @@
   <div v-bind="attrs" class="flex flex-col gap-3">
     <p
       v-if="description"
-      class="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+      class="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
     >
       {{ description }}
     </p>
