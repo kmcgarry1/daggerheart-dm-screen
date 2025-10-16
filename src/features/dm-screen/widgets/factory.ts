@@ -11,19 +11,12 @@ import {
   defaultTitle,
   type CountdownConfig,
 } from '@/features/countdown'
+import { createIdGenerator } from '@/shared/utils'
 
-let widgetCounter = 0
-const createId = () => {
-  const cryptoApi = typeof globalThis !== 'undefined' ? globalThis.crypto : undefined
-  if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
-    return `widget-${cryptoApi.randomUUID()}`
-  }
-  widgetCounter += 1
-  return `widget-${Date.now()}-${widgetCounter}`
-}
+const createWidgetId = createIdGenerator('widget')
 
 const createNoteWidget = (size: WidgetSize): DashboardWidget => ({
-  id: createId(),
+  id: createWidgetId(),
   title: '',
   body: '',
   size,
@@ -35,7 +28,7 @@ const createNoteWidget = (size: WidgetSize): DashboardWidget => ({
 const createCountdownWidget = (size: WidgetSize): DashboardWidget => {
   const config = createDefaultCountdownConfig()
   return {
-    id: createId(),
+    id: createWidgetId(),
     title: (config.title || defaultTitle).trim() || defaultTitle,
     description: (config.description || defaultDescription).trim(),
     size,
@@ -51,7 +44,7 @@ export const defaultConditionsDescription =
 const defaultConditionsAccent = '#a855f7'
 
 const createConditionsWidget = (size: WidgetSize): DashboardWidget => ({
-  id: createId(),
+  id: createWidgetId(),
   title: 'Condition Rules',
   description: defaultConditionsDescription,
   titleColor: defaultConditionsAccent,
@@ -63,7 +56,7 @@ const createConditionsWidget = (size: WidgetSize): DashboardWidget => ({
 })
 
 const createYoutubeWidget = (size: WidgetSize): DashboardWidget => ({
-  id: createId(),
+  id: createWidgetId(),
   title: 'YouTube',
   url: '',
   size,
@@ -74,7 +67,7 @@ const createYoutubeWidget = (size: WidgetSize): DashboardWidget => ({
 })
 
 const createSpotifyWidget = (size: WidgetSize): DashboardWidget => ({
-  id: createId(),
+  id: createWidgetId(),
   title: 'Spotify',
   url: '',
   size,
@@ -151,5 +144,5 @@ export function useWidgetFactory(context: WidgetFactoryContext) {
 export const assignWidgetIds = (widgets: DashboardWidget[]) =>
   widgets.map((widget) => ({
     ...widget,
-    id: widget.id || createId(),
+    id: widget.id || createWidgetId(),
   }))
