@@ -4,7 +4,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   const normalized = hex.replace('#', '')
 
   if (![3, 6].includes(normalized.length)) {
-    throw new Error(`Unsupported hex color: ${hex}`)
+    throw new Error(`Unsupported hex color: ${hex}. Expected formats: '#fff' or '#ffffff'.`)
   }
 
   const values =
