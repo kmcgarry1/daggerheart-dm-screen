@@ -44,12 +44,13 @@
 import { storeToRefs } from 'pinia'
 
 import { useNotificationsStore } from '@/shared/stores'
+import type { NotificationEntry } from '@/shared/stores'
 
 const notificationsStore = useNotificationsStore()
 const { notifications } = storeToRefs(notificationsStore)
 const { removeNotification } = notificationsStore
 
-const toneClass = (type: string) => {
+const toneClass = (type: NotificationEntry['type']) => {
   switch (type) {
     case 'success':
       return 'border-emerald-200/60 bg-emerald-50/95 text-emerald-950 dark:border-emerald-500/40 dark:bg-emerald-500/20 dark:text-emerald-50'
@@ -62,7 +63,7 @@ const toneClass = (type: string) => {
   }
 }
 
-const toneIcon = (type: string) => {
+const toneIcon = (type: NotificationEntry['type']) => {
   switch (type) {
     case 'success':
       return '✓'
