@@ -28,6 +28,8 @@
               type="button"
               class="rounded-full p-1 text-sm font-semibold opacity-80 transition hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300"
               @click="removeNotification(notification.id)"
+              aria-label="Dismiss notification"
+              title="Dismiss"
             >
               ✕
             </button>
