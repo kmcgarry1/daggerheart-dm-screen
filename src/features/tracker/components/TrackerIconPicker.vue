@@ -44,7 +44,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 
-import type { TrackerIconOption } from './registry'
+import type { TrackerIconOption } from '../registry'
 
 const props = withDefaults(
   defineProps<{

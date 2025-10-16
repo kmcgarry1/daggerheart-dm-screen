@@ -26,7 +26,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-import type { TrackerButtonPalette } from './types'
+import type { TrackerButtonPalette } from '../types'
 
 const props = withDefaults(
   defineProps<{

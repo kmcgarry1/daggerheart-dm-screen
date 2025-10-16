@@ -135,9 +135,11 @@ export function applyWidgetUpdate(widgets: Ref<DashboardWidget[]>, payload: Widg
     type: K,
     target: Extract<DashboardWidget, { type: K }>,
   ) => {
-    const handlers = updateStrategies[type]
-    const handler = handlers[payload.key]
-    handler?.(target, payload.value, widgets)
+    const handlers = updateStrategies[type] as Partial<Record<WidgetUpdateKey, WidgetUpdateHandler<K>>>
+    const handler = handlers[payload.key as WidgetUpdateKey]
+    if (typeof handler === 'function') {
+      handler(target, payload.value, widgets)
+    }
   }
 
   switch (widget.type) {

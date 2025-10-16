@@ -10,8 +10,8 @@ import {
   defaultTitle,
   formatPaletteLabel,
   formatProgressLabel,
-} from './options'
-import type { ButtonSizeOption, CardVariantOption, CountdownConfig } from './types'
+} from '../config/options'
+import type { ButtonSizeOption, CardVariantOption, CountdownConfig } from '../config/types'
 
 const clampStepCount = (value: number) =>
   Math.max(MIN_COUNTDOWN_STEPS, Math.min(MAX_COUNTDOWN_STEPS, Math.round(value || 0)))
