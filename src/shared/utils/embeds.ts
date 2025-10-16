@@ -1,6 +1,12 @@
+import { reportError } from './errors'
+
+const embedContextKey = (type: 'youtube' | 'spotify') => `embed:${type}`
+
 export const computeYouTubeEmbed = (url: string): string => {
+  const trimmed = url.trim()
+  if (!trimmed) return ''
   try {
-    const u = new URL(url)
+    const u = new URL(trimmed)
     if (u.hostname.includes('youtu.be')) {
       const id = u.pathname.replace('/', '')
       return id ? `https://www.youtube.com/embed/${id}` : ''
@@ -12,16 +18,27 @@ export const computeYouTubeEmbed = (url: string): string => {
       const last = parts[parts.length - 1]
       if (parts[0] === 'shorts' && last) return `https://www.youtube.com/embed/${last}`
     }
-  } catch {}
+  } catch (error) {
+    reportError('We could not read that YouTube link.', error, {
+      context: embedContextKey('youtube'),
+      oncePerContext: true,
+    })
+  }
   return ''
 }
 
 export const computeSpotifyEmbed = (url: string): string => {
+  const trimmed = url.trim()
+  if (!trimmed) return ''
   try {
-    const u = new URL(url)
+    const u = new URL(trimmed)
     if (!u.hostname.includes('spotify.')) return ''
     return `https://open.spotify.com/embed${u.pathname}`
-  } catch {}
+  } catch (error) {
+    reportError('We could not read that Spotify link.', error, {
+      context: embedContextKey('spotify'),
+      oncePerContext: true,
+    })
+  }
   return ''
 }
-

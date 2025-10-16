@@ -8,10 +8,28 @@ import {
   useWidgetPersistence,
   type WidgetUpdatePayload,
 } from '@/features/dm-screen/widgets'
+import { reportError } from '@/shared/utils'
 
 export function useWidgets() {
-  const { widgets } = useWidgetPersistence(() => assignWidgetIds(createDefaultWidgets()))
-  widgets.value = assignWidgetIds(widgets.value)
+  const { widgets } = useWidgetPersistence(() => {
+    try {
+      return assignWidgetIds(createDefaultWidgets())
+    } catch (error) {
+      reportError('We could not prepare your widgets.', error, {
+        context: 'widgets:initialize',
+      })
+      return []
+    }
+  })
+
+  try {
+    widgets.value = assignWidgetIds(widgets.value)
+  } catch (error) {
+    reportError('We could not restore your saved widgets.', error, {
+      context: 'widgets:restore',
+    })
+    widgets.value = []
+  }
 
   const focus = useWidgetFocus(widgets)
   const factory = useWidgetFactory({
@@ -22,18 +40,36 @@ export function useWidgets() {
   const dock = useWidgetDock(widgets, focus.focusWidget)
 
   const removeWidget = (id: string) => {
-    widgets.value = widgets.value.filter((widget) => widget.id !== id)
-    if (focus.activeWidgetId.value === id) {
-      focus.activeWidgetId.value = widgets.value[0]?.id ?? null
+    try {
+      widgets.value = widgets.value.filter((widget) => widget.id !== id)
+      if (focus.activeWidgetId.value === id) {
+        focus.activeWidgetId.value = widgets.value[0]?.id ?? null
+      }
+    } catch (error) {
+      reportError('We could not remove that widget.', error, {
+        context: 'widgets:remove',
+      })
     }
   }
 
   const handleWidgetUpdate = (payload: WidgetUpdatePayload) => {
-    factory.handleWidgetUpdate(payload)
+    try {
+      factory.handleWidgetUpdate(payload)
+    } catch (error) {
+      reportError('We could not apply that widget update.', error, {
+        context: 'widgets:update',
+      })
+    }
   }
 
   const handleCountdownUpdate = (payload: { id: string; config: CountdownConfig; title: string; description: string }) => {
-    factory.handleCountdownUpdate(payload)
+    try {
+      factory.handleCountdownUpdate(payload)
+    } catch (error) {
+      reportError('We could not update that countdown.', error, {
+        context: 'widgets:countdown',
+      })
+    }
   }
 
   return {
