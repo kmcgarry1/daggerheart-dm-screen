@@ -15,8 +15,9 @@
         class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
       >
         <WidgetCardShell
-          v-for="widget in renderedWidgets"
+          v-for="widget in widgets"
           :key="widget.id"
+          v-memo="widgetMemo(widget)"
           :widget="widget"
           :size-options="sizeOptions"
           :span-class="spanClassForSize(widget.size)"
@@ -60,7 +61,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, toRefs } from 'vue'
+import { toRefs } from 'vue'
 
 import { CountdownWidgetCard, type CountdownConfig } from '@/features/countdown'
 import { ConditionsRulesWidgetCard } from '@/features/conditions'
@@ -90,9 +91,50 @@ const emit = defineEmits<{
 
 const { widgets, activeWidgetId, sizeOptions, spanClassForSize, collapsed } = toRefs(props)
 
-const renderedWidgets = computed(() => widgets.value.filter((widget) => !widget.hidden))
-
 const emitUpdate = (id: string, payload: { key: WidgetUpdateKey; value: string | boolean }) => {
   emit('update-widget', { id, ...payload })
+}
+
+const widgetMemo = (widget: DashboardWidget) => {
+  const base: Array<string | number | boolean | null> = [
+    widget.id,
+    widget.type,
+    widget.size,
+    widget.editing,
+    Boolean(widget.hidden),
+    widget.title,
+  ]
+
+  switch (widget.type) {
+    case 'note':
+      base.push(widget.body)
+      break
+    case 'countdown':
+      base.push(
+        widget.description,
+        widget.countdown.title,
+        widget.countdown.description,
+        widget.countdown.paletteId,
+        widget.countdown.iconId,
+        widget.countdown.stepCount,
+        widget.countdown.buttonSizeId,
+        widget.countdown.cardVariantId,
+        widget.countdown.progress,
+      )
+      break
+    case 'conditions':
+      base.push(widget.description, widget.titleColor ?? null, widget.dividerColor ?? null)
+      break
+    case 'youtube':
+      base.push(widget.url, widget.background, widget.muted ?? null)
+      break
+    case 'spotify':
+      base.push(widget.url)
+      break
+    default:
+      break
+  }
+
+  return base
 }
 </script>

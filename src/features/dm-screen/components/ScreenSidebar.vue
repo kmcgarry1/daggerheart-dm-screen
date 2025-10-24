@@ -89,6 +89,23 @@
           <p class="text-xs text-[color:var(--dh-panel-muted)]">
             If a YouTube widget is set as background, it will play behind the dashboard.
           </p>
+          <label
+            class="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
+          >
+            <span>Backdrop Zoom</span>
+            <div class="flex items-center gap-3 text-[color:var(--dh-panel-text)]">
+              <input
+                :value="backgroundZoom"
+                type="range"
+                :min="backgroundZoomMin"
+                :max="backgroundZoomMax"
+                step="0.01"
+                class="h-2 w-full cursor-pointer appearance-none rounded-full bg-[color:var(--dh-panel-border)] accent-violet-400"
+                @input="onBackgroundZoomInput"
+              />
+              <span class="text-sm font-semibold tabular-nums">{{ zoomDisplay }}</span>
+            </div>
+          </label>
           <input
             ref="fileInputRef"
             class="hidden"
@@ -186,6 +203,9 @@ const props = defineProps<{
   activeWidgetId: string | null
   backgroundCount: number
   hasBackgrounds: boolean
+  backgroundZoom: number
+  backgroundZoomMin: number
+  backgroundZoomMax: number
 }>()
 
 const emit = defineEmits<{
@@ -196,6 +216,7 @@ const emit = defineEmits<{
   (e: 'clear-backgrounds'): void
   (e: 'focus-widget', id: string): void
   (e: 'close'): void
+  (e: 'update:background-zoom', value: number): void
 }>()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -210,9 +231,13 @@ const {
   activeWidgetId,
   backgroundCount,
   hasBackgrounds,
+  backgroundZoom,
+  backgroundZoomMin,
+  backgroundZoomMax,
 } = toRefs(props)
 
 const selectedTypeOption = computed(() => getWidgetTypeOption(nextWidgetType.value))
+const zoomDisplay = computed(() => `${Math.round(backgroundZoom.value * 100)}%`)
 
 const triggerUpload = () => {
   fileInputRef.value?.click()
@@ -224,6 +249,12 @@ const onBackgroundInput = (event: Event) => {
   if (!files || files.length === 0) return
   emit('upload-backgrounds', Array.from(files))
   if (target) target.value = ''
+}
+
+const onBackgroundZoomInput = (event: Event) => {
+  const target = event.target as HTMLInputElement | null
+  if (!target) return
+  emit('update:background-zoom', Number(target.value))
 }
 
 const sizeLabel = (size: WidgetSize) => getSizeLabel(size)
