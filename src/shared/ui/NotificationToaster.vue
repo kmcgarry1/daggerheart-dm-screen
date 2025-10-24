@@ -41,14 +41,29 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { useNotificationsStore } from '@/shared/stores'
 import type { NotificationEntry } from '@/shared/stores'
 
-const notificationsStore = useNotificationsStore()
-const { notifications } = storeToRefs(notificationsStore)
-const { removeNotification } = notificationsStore
+let notificationsStore: ReturnType<typeof useNotificationsStore> | null = null
+
+try {
+  notificationsStore = useNotificationsStore()
+} catch (error) {
+  if (import.meta.env.DEV) {
+    console.warn('[notifications] NotificationToaster rendered without an active Pinia instance.', error)
+  }
+}
+
+const notifications = notificationsStore
+  ? storeToRefs(notificationsStore).notifications
+  : ref<NotificationEntry[]>([])
+
+const removeNotification: (id: string) => void = notificationsStore
+  ? notificationsStore.removeNotification
+  : () => {}
 
 const toneClass = (type: NotificationEntry['type']) => {
   switch (type) {

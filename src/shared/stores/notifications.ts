@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { ref, readonly, shallowRef, watchEffect } from 'vue'
 import { defineStore } from 'pinia'
 
 import { createIdGenerator } from '@/shared/utils/id'
@@ -32,11 +32,16 @@ type TimeoutHandle = ReturnType<typeof setTimeout>
 
 export const useNotificationsStore = defineStore('notifications', () => {
   const notifications = ref<NotificationEntry[]>([])
+  const visibleNotifications = shallowRef<NotificationEntry[]>([])
   const timers = new Map<string, TimeoutHandle>()
 
-  const sortedNotifications = computed(() =>
-    [...notifications.value].sort((a, b) => b.createdAt - a.createdAt),
-  )
+  watchEffect(() => {
+    // Notifications are inserted in newest-first order, so we can expose the
+    // exact array reference that consumers can render without forcing a clone
+    // or resort on every access. Using a shallow ref keeps the list reactive
+    // while avoiding the cost of deep watching each entry.
+    visibleNotifications.value = notifications.value
+  })
 
   const clearTimer = (id: string) => {
     const timer = timers.get(id)
@@ -97,7 +102,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
   }
 
   return {
-    notifications: sortedNotifications,
+    notifications: readonly(visibleNotifications),
     addNotification,
     removeNotification,
     clearNotifications,

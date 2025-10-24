@@ -1,6 +1,6 @@
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
-import { load, reportError, save } from '@/shared/utils'
+import { load, reportError, save, watchDebounced } from '@/shared/utils'
 import type { DashboardWidget } from './types'
 
 export type WidgetInitializer = () => DashboardWidget[]
@@ -16,14 +16,22 @@ export function useWidgetPersistence(createInitialWidgets: WidgetInitializer) {
     initialWidgets = []
   }
 
-  const widgets = ref<DashboardWidget[]>(load<DashboardWidget[]>('widgets', initialWidgets))
+  const normalizeWidget = (widget: DashboardWidget): DashboardWidget => ({
+    ...widget,
+    editing: false,
+  })
 
-  watch(
+  const widgets = ref<DashboardWidget[]>(
+    load<DashboardWidget[]>('widgets', initialWidgets).map((widget) => normalizeWidget({ ...widget })),
+  )
+
+  watchDebounced(
     widgets,
     (value) => {
-      save('widgets', value)
+      const persistable = value.map((widget) => normalizeWidget({ ...widget }))
+      save('widgets', persistable)
     },
-    { deep: true },
+    { deep: true, debounce: 250, maxWait: 1000 },
   )
 
   return { widgets }

@@ -1,3 +1,5 @@
+import { shallowRef, watchEffect } from 'vue'
+
 import type { CountdownConfig } from '@/features/countdown'
 import {
   assignWidgetIds,
@@ -8,7 +10,8 @@ import {
   useWidgetPersistence,
   type WidgetUpdatePayload,
 } from '@/features/dm-screen/widgets'
-import { reportError } from '@/shared/utils'
+import type { YoutubeWidget } from '@/features/dm-screen/widgets'
+import { computeYouTubeEmbed, reportError } from '@/shared/utils'
 
 export function useWidgets() {
   const { widgets } = useWidgetPersistence(() => {
@@ -39,12 +42,34 @@ export function useWidgets() {
   })
   const dock = useWidgetDock(widgets, focus.focusWidget)
 
+  const visibleWidgets = shallowRef<DashboardWidget[]>([])
+
+  watchEffect(() => {
+    visibleWidgets.value = widgets.value.filter((widget) => !widget.hidden)
+  })
+
+  const youtubeBackgroundSrc = shallowRef<string | null>(null)
+
+  const refreshYoutubeBackground = () => {
+    const candidate = widgets.value.find(
+      (entry): entry is YoutubeWidget => entry.type === 'youtube' && entry.background,
+    )
+    if (!candidate || !candidate.url) {
+      youtubeBackgroundSrc.value = null
+      return
+    }
+    youtubeBackgroundSrc.value = computeYouTubeEmbed(candidate.url) || null
+  }
+
+  refreshYoutubeBackground()
+
   const removeWidget = (id: string) => {
     try {
       widgets.value = widgets.value.filter((widget) => widget.id !== id)
       if (focus.activeWidgetId.value === id) {
         focus.activeWidgetId.value = widgets.value[0]?.id ?? null
       }
+      refreshYoutubeBackground()
     } catch (error) {
       reportError('We could not remove that widget.', error, {
         context: 'widgets:remove',
@@ -54,6 +79,9 @@ export function useWidgets() {
 
   const handleWidgetUpdate = (payload: WidgetUpdatePayload) => {
     factory.handleWidgetUpdate(payload)
+    if (payload.key === 'background' || payload.key === 'url') {
+      refreshYoutubeBackground()
+    }
   }
 
   const handleCountdownUpdate = (payload: { id: string; config: CountdownConfig; title: string; description: string }) => {
@@ -62,13 +90,17 @@ export function useWidgets() {
 
   return {
     widgets,
+    visibleWidgets,
     sizeOptions: factory.sizeOptions,
     widgetTypeOptions: factory.widgetTypeOptions,
     nextWidgetSize: factory.nextWidgetSize,
     nextWidgetSizeLabel: factory.nextWidgetSizeLabel,
     nextWidgetType: factory.nextWidgetType,
     activeWidgetId: focus.activeWidgetId,
-    addWidget: factory.addWidget,
+    addWidget: () => {
+      factory.addWidget()
+      refreshYoutubeBackground()
+    },
     toggleEditing: focus.toggleEditing,
     handleWidgetUpdate,
     handleCountdownUpdate,
@@ -82,5 +114,6 @@ export function useWidgets() {
     dockLabel: dock.dockLabel,
     widgetIcon: dock.widgetIcon,
     countdownDockLabel: dock.countdownDockLabel,
+    youtubeBackgroundSrc,
   }
 }
