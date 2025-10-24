@@ -1,9 +1,6 @@
 <template>
   <div>
     <div class="flex flex-wrap items-center justify-end gap-2">
-      <RouterLink to="/widget-library" class="dh-toggle">
-        Widget Library
-      </RouterLink>
       <button type="button" class="dh-toggle" @click="$emit('toggle:dark')">
         <span aria-hidden="true">{{ darkMode ? '🌙' : '☀️' }}</span>
       </button>
@@ -24,8 +21,6 @@
 </template>
 
 <script lang="ts" setup>
-import { RouterLink } from 'vue-router'
-
 import { FearTracker } from '@/features/fear'
 
 defineProps<{

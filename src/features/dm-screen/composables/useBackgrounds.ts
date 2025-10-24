@@ -12,6 +12,7 @@ export type BackgroundLayer = {
   panToX: number
   panToY: number
   durationMs: number
+  delayMs: number
   scaleFrom: number
   scaleTo: number
 }
@@ -26,6 +27,7 @@ type BackgroundAnimationDescriptor = {
   durationMs: number
   zoomVariance: number
   reverseZoom: boolean
+  delayMs: number
 }
 
 const createBackgroundId = createIdGenerator('bg')
@@ -74,23 +76,39 @@ const slidesEqual = (a: BackgroundSlide[], b: BackgroundSlide[]) => {
 }
 
 const createAnimationDescriptor = (slideId: string): BackgroundAnimationDescriptor => {
-  const angle = Math.random() * Math.PI * 2
-  const distance = 2 + Math.random() * 3
-  const offsetX = Math.cos(angle) * distance
-  const offsetY = Math.sin(angle) * distance
-  const durationMs = 70000 + Math.random() * 40000
-  const zoomVariance = 0.04 + Math.random() * 0.05
+  const randomOffset = () => {
+    const angle = Math.random() * Math.PI * 2
+    const distance = 3.5 + Math.random() * 5.5
+    return {
+      x: Math.cos(angle) * distance,
+      y: Math.sin(angle) * distance,
+    }
+  }
+
+  let from = randomOffset()
+  let to = randomOffset()
+  let attempts = 0
+  while (Math.hypot(to.x - from.x, to.y - from.y) < 2.4 && attempts < 5) {
+    to = randomOffset()
+    attempts += 1
+  }
+
+  const durationMs = Math.round(24000 + Math.random() * 16000)
+  const zoomVariance = 0.12 + Math.random() * 0.1
+  const initialProgress = Math.random()
+  const delayMs = -Math.round(initialProgress * durationMs)
 
   return {
     id: `${slideId}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
     slideId,
-    panFromX: 0,
-    panFromY: 0,
-    panToX: offsetX,
-    panToY: offsetY,
+    panFromX: from.x,
+    panFromY: from.y,
+    panToX: to.x,
+    panToY: to.y,
     durationMs,
     zoomVariance,
     reverseZoom: Math.random() > 0.5,
+    delayMs,
   }
 }
 
@@ -108,18 +126,25 @@ export function useBackgrounds() {
   const screenStyle = computed<CSSProperties>(() => {
     const gradient = baseGradient.value
     const slide = currentSlide.value
-    if (!slide) {
+    const hasLayers = animationQueue.value.length > 0
+    const baseStyle: CSSProperties = {
+      backgroundImage: gradient,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }
+    if (!slide) return baseStyle
+    if (!hasLayers) {
       return {
-        backgroundImage: gradient,
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
+        ...baseStyle,
+        backgroundImage: `${gradient}, url('${slide.url}')`,
+        backgroundSize: 'cover, cover',
+        backgroundPosition: 'center, center',
+        backgroundRepeat: 'no-repeat, no-repeat',
       }
     }
     return {
-      backgroundImage: `${gradient}, url('${slide.url}')`,
-      backgroundSize: 'cover, cover',
-      backgroundPosition: 'center, center',
-      backgroundRepeat: 'no-repeat, no-repeat',
+      ...baseStyle,
     }
   })
 
@@ -142,11 +167,49 @@ export function useBackgrounds() {
         const slide = map.get(descriptor.slideId)
         if (!slide) return null
         const halfDelta = Math.abs(descriptor.zoomVariance) / 2
-        let scaleFrom = clampZoom(baseScale - halfDelta)
-        let scaleTo = clampZoom(baseScale + halfDelta)
+        let scaleStart = baseScale - halfDelta
+        let scaleEnd = baseScale + halfDelta
         if (descriptor.reverseZoom) {
-          ;[scaleFrom, scaleTo] = [scaleTo, scaleFrom]
+          ;[scaleStart, scaleEnd] = [scaleEnd, scaleStart]
         }
+
+        const maxOffsetX = Math.max(Math.abs(descriptor.panFromX), Math.abs(descriptor.panToX))
+        const maxOffsetY = Math.max(Math.abs(descriptor.panFromY), Math.abs(descriptor.panToY))
+        const maxOffset = Math.max(maxOffsetX, maxOffsetY)
+        const minScaleForOffsets = Math.min(ZOOM_MAX, 1 + maxOffset / 50)
+
+        const currentMin = Math.min(scaleStart, scaleEnd)
+        if (currentMin < minScaleForOffsets) {
+          const increase = minScaleForOffsets - currentMin
+          scaleStart += increase
+          scaleEnd += increase
+        }
+
+        const currentMax = Math.max(scaleStart, scaleEnd)
+        if (currentMax > ZOOM_MAX) {
+          const overshoot = currentMax - ZOOM_MAX
+          scaleStart -= overshoot
+          scaleEnd -= overshoot
+        }
+
+        scaleStart = clampZoom(scaleStart)
+        scaleEnd = clampZoom(scaleEnd)
+
+        const adjustedMin = Math.min(scaleStart, scaleEnd)
+        if (adjustedMin < minScaleForOffsets) {
+          const delta = Math.min(
+            minScaleForOffsets - adjustedMin,
+            Math.max(0, ZOOM_MAX - Math.max(scaleStart, scaleEnd)),
+          )
+          scaleStart = clampZoom(scaleStart + delta)
+          scaleEnd = clampZoom(scaleEnd + delta)
+          const finalMin = Math.min(scaleStart, scaleEnd)
+          if (finalMin < minScaleForOffsets) {
+            scaleStart = clampZoom(Math.max(scaleStart, minScaleForOffsets))
+            scaleEnd = clampZoom(Math.max(scaleEnd, minScaleForOffsets))
+          }
+        }
+
         return {
           id: descriptor.id,
           url: slide.url,
@@ -155,8 +218,9 @@ export function useBackgrounds() {
           panToX: descriptor.panToX,
           panToY: descriptor.panToY,
           durationMs: descriptor.durationMs,
-          scaleFrom,
-          scaleTo,
+          delayMs: descriptor.delayMs,
+          scaleFrom: scaleStart,
+          scaleTo: scaleEnd,
         }
       })
       .filter((layer): layer is BackgroundLayer => layer !== null)
