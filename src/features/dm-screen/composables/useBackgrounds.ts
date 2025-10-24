@@ -12,7 +12,8 @@ export type BackgroundLayer = {
   panToX: number
   panToY: number
   durationMs: number
-  scale: number
+  scaleFrom: number
+  scaleTo: number
 }
 
 const createBackgroundId = createIdGenerator('bg')
@@ -146,21 +147,29 @@ export function useBackgrounds() {
       }
       const newLayer: BackgroundLayer = (() => {
         const angle = Math.random() * Math.PI * 2
-        const distance = 4 + Math.random() * 6
+        const distance = 2 + Math.random() * 3
         const offsetX = Math.cos(angle) * distance
         const offsetY = Math.sin(angle) * distance
         const durationMs = 70000 + Math.random() * 40000
-        const scale = clampZoom(backgroundZoom.value)
+        const baseScale = clampZoom(backgroundZoom.value)
+        const zoomVariance = 0.04 + Math.random() * 0.05
+        const halfDelta = zoomVariance / 2
+        let scaleFrom = clampZoom(baseScale - halfDelta)
+        let scaleTo = clampZoom(baseScale + halfDelta)
+        if (Math.random() > 0.5) {
+          ;[scaleFrom, scaleTo] = [scaleTo, scaleFrom]
+        }
 
         return {
           id: `${next.id}-${Date.now()}`,
           url: next.url,
-          panFromX: -offsetX,
-          panFromY: -offsetY,
+          panFromX: 0,
+          panFromY: 0,
           panToX: offsetX,
           panToY: offsetY,
           durationMs,
-          scale,
+          scaleFrom,
+          scaleTo,
         }
       })()
       const previous = backgroundLayers.value[0]
@@ -223,7 +232,15 @@ export function useBackgrounds() {
         return
       }
       save('backgroundZoom', clamped)
-      backgroundLayers.value = backgroundLayers.value.map((layer) => ({ ...layer, scale: clamped }))
+      backgroundLayers.value = backgroundLayers.value.map((layer) => {
+        const halfDelta = Math.abs(layer.scaleTo - layer.scaleFrom) / 2
+        let scaleFrom = clampZoom(clamped - halfDelta)
+        let scaleTo = clampZoom(clamped + halfDelta)
+        if (layer.scaleFrom > layer.scaleTo) {
+          ;[scaleFrom, scaleTo] = [scaleTo, scaleFrom]
+        }
+        return { ...layer, scaleFrom, scaleTo }
+      })
     },
     { immediate: true },
   )

@@ -343,7 +343,8 @@
     --dh-pan-from-y: 0%;
     --dh-pan-to-x: 0%;
     --dh-pan-to-y: 0%;
-    --dh-pan-scale: 1.08;
+    --dh-pan-from-scale: 1.04;
+    --dh-pan-to-scale: 1.12;
     animation: dh-background-pan var(--dh-pan-duration) ease-in-out infinite alternate;
     transform-origin: center;
     will-change: transform;
@@ -407,12 +408,12 @@
 
 @keyframes dh-background-pan {
     0% {
-        transform: scale(var(--dh-pan-scale, 1.08))
+        transform: scale(var(--dh-pan-from-scale, 1.08))
             translate3d(var(--dh-pan-from-x, 0%), var(--dh-pan-from-y, 0%), 0);
     }
 
     100% {
-        transform: scale(var(--dh-pan-scale, 1.08))
+        transform: scale(var(--dh-pan-to-scale, 1.12))
             translate3d(var(--dh-pan-to-x, 0%), var(--dh-pan-to-y, 0%), 0);
     }
 }
