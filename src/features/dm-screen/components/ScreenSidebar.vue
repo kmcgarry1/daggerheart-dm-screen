@@ -20,7 +20,7 @@
       <div class="flex flex-col gap-8 pt-6">
         <section class="flex flex-col gap-4">
           <header class="space-y-1">
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--dh-panel-muted)]">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--dh-panel-muted)]">
               Widget Library
             </p>
             <h2 class="text-xl font-semibold">Create Dashboard Widget</h2>
@@ -46,12 +46,12 @@
                 class="text-xs font-medium"
                 :class="option.value === nextWidgetSize ? 'opacity-80' : 'text-[color:var(--dh-panel-muted)]'"
               >
-                {{ option.columns }} columns
+                {{ option.columns }} {{ option.columns === 1 ? 'column' : 'columns' }}
               </span>
             </button>
           </div>
           <label
-            class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+            class="flex flex-col gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
           >
             <span>Widget Type</span>
             <select
@@ -78,7 +78,7 @@
 
         <section class="flex flex-col gap-4">
           <header class="space-y-1">
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--dh-panel-muted)]">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--dh-panel-muted)]">
               Atmosphere
             </p>
             <h2 class="text-xl font-semibold">Dashboard Backdrop</h2>
@@ -89,6 +89,23 @@
           <p class="text-xs text-[color:var(--dh-panel-muted)]">
             If a YouTube widget is set as background, it will play behind the dashboard.
           </p>
+          <label
+            class="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
+          >
+            <span>Backdrop Zoom</span>
+            <div class="flex items-center gap-3 text-[color:var(--dh-panel-text)]">
+              <input
+                :value="backgroundZoom"
+                type="range"
+                :min="backgroundZoomMin"
+                :max="backgroundZoomMax"
+                step="0.01"
+                class="h-2 w-full cursor-pointer appearance-none rounded-full bg-[color:var(--dh-panel-border)] accent-violet-400"
+                @input="onBackgroundZoomInput"
+              />
+              <span class="text-sm font-semibold tabular-nums">{{ zoomDisplay }}</span>
+            </div>
+          </label>
           <input
             ref="fileInputRef"
             class="hidden"
@@ -98,13 +115,13 @@
             @change="onBackgroundInput"
           />
           <div class="flex flex-col gap-3">
-            <button type="button" class="dh-toggle justify-center" @click="triggerUpload">
+            <button type="button" class="dh-toggle dh-toggle--subtle justify-center" @click="triggerUpload">
               Upload Background Images
             </button>
             <button
               v-if="hasBackgrounds"
               type="button"
-              class="dh-pill text-center"
+              class="dh-pill dh-pill--muted text-center"
               @click="$emit('clear-backgrounds')"
             >
               Clear ({{ backgroundCount }})
@@ -114,7 +131,7 @@
 
         <section class="flex flex-col gap-4" aria-live="polite">
           <header class="space-y-1">
-            <p class="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--dh-panel-muted)]">
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--dh-panel-muted)]">
               Dashboard Content
             </p>
             <h2 class="text-xl font-semibold">
@@ -186,6 +203,9 @@ const props = defineProps<{
   activeWidgetId: string | null
   backgroundCount: number
   hasBackgrounds: boolean
+  backgroundZoom: number
+  backgroundZoomMin: number
+  backgroundZoomMax: number
 }>()
 
 const emit = defineEmits<{
@@ -196,6 +216,7 @@ const emit = defineEmits<{
   (e: 'clear-backgrounds'): void
   (e: 'focus-widget', id: string): void
   (e: 'close'): void
+  (e: 'update:background-zoom', value: number): void
 }>()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -210,9 +231,13 @@ const {
   activeWidgetId,
   backgroundCount,
   hasBackgrounds,
+  backgroundZoom,
+  backgroundZoomMin,
+  backgroundZoomMax,
 } = toRefs(props)
 
 const selectedTypeOption = computed(() => getWidgetTypeOption(nextWidgetType.value))
+const zoomDisplay = computed(() => `${Math.round(backgroundZoom.value * 100)}%`)
 
 const triggerUpload = () => {
   fileInputRef.value?.click()
@@ -224,6 +249,12 @@ const onBackgroundInput = (event: Event) => {
   if (!files || files.length === 0) return
   emit('upload-backgrounds', Array.from(files))
   if (target) target.value = ''
+}
+
+const onBackgroundZoomInput = (event: Event) => {
+  const target = event.target as HTMLInputElement | null
+  if (!target) return
+  emit('update:background-zoom', Number(target.value))
 }
 
 const sizeLabel = (size: WidgetSize) => getSizeLabel(size)

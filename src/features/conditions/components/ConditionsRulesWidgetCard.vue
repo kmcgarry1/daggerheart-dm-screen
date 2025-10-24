@@ -3,7 +3,7 @@
     <section class="space-y-6">
       <header class="space-y-3">
         <p
-          class="text-xs font-semibold uppercase tracking-[0.28em] text-[color:var(--dh-panel-muted)]"
+          class="text-xs font-semibold uppercase tracking-[0.2em] text-[color:var(--dh-panel-muted)]"
         >
           Conditions Reference
         </p>
@@ -32,7 +32,7 @@
       class="flex flex-col gap-6 rounded-2xl border border-[color:var(--dh-panel-border)] bg-[color:var(--dh-panel-bg)]/65 p-5"
     >
       <label
-        class="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Condition Name</span>
         <input
@@ -45,7 +45,7 @@
       </label>
 
       <label
-        class="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]"
+        class="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
       >
         <span>Rules Text</span>
         <textarea
@@ -59,7 +59,7 @@
 
       <div class="grid gap-5 md:grid-cols-2">
         <fieldset class="flex flex-col gap-3">
-          <legend class="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]">
+          <legend class="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]">
             Title Accent
           </legend>
           <button
@@ -83,7 +83,7 @@
         </fieldset>
 
         <fieldset class="flex flex-col gap-3">
-          <legend class="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--dh-panel-muted)]">
+          <legend class="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]">
             Divider Accent
           </legend>
           <button

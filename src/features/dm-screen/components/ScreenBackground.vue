@@ -9,7 +9,7 @@
         v-for="layer in layers"
         :key="layer.id"
         class="dh-background-layer absolute inset-0 h-full w-full bg-cover bg-center bg-no-repeat"
-        :style="{ backgroundImage: `url('${layer.url}')` }"
+        :style="layerStyle(layer)"
       ></div>
     </TransitionGroup>
   </div>
@@ -18,10 +18,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 
-type BackgroundLayer = {
-  id: string
-  url: string
-}
+import type { BackgroundLayer } from '@/features/dm-screen/composables/useBackgrounds'
 
 const props = defineProps<{
   layers: BackgroundLayer[]
@@ -29,4 +26,19 @@ const props = defineProps<{
 }>()
 
 const gradient = computed(() => props.baseGradient ?? 'var(--dh-backdrop)')
+
+const formatPercent = (value: number) => {
+  const normalized = Math.abs(value) < 0.005 ? 0 : value
+  return `${normalized.toFixed(2)}%`
+}
+
+const layerStyle = (layer: BackgroundLayer): Record<string, string> => ({
+  backgroundImage: `url('${layer.url}')`,
+  '--dh-pan-from-x': formatPercent(layer.panFromX),
+  '--dh-pan-from-y': formatPercent(layer.panFromY),
+  '--dh-pan-to-x': formatPercent(layer.panToX),
+  '--dh-pan-to-y': formatPercent(layer.panToY),
+  '--dh-pan-duration': `${Math.round(layer.durationMs)}ms`,
+  '--dh-pan-scale': layer.scale.toString(),
+})
 </script>

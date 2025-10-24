@@ -4,11 +4,29 @@ import type { CSSProperties } from 'vue'
 import { createIdGenerator, load, save, reportError } from '@/shared/utils'
 
 export type BackgroundSlide = { id: string; url: string }
-export type BackgroundLayer = { id: string; url: string }
+export type BackgroundLayer = {
+  id: string
+  url: string
+  panFromX: number
+  panFromY: number
+  panToX: number
+  panToY: number
+  durationMs: number
+  scale: number
+}
 
 const createBackgroundId = createIdGenerator('bg')
 
 const backgroundContext = (action: string) => `backgrounds:${action}`
+
+const DEFAULT_ZOOM = 1.08
+const ZOOM_MIN = 1
+const ZOOM_MAX = 1.4
+
+const clampZoom = (value: number) => {
+  if (!Number.isFinite(value)) return DEFAULT_ZOOM
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, value))
+}
 
 const releaseObjectUrl = (url: string, action: string) => {
   try {
@@ -26,6 +44,7 @@ export function useBackgrounds() {
   const backgroundImages = ref<BackgroundSlide[]>(load<BackgroundSlide[]>('backgroundImages', []))
   const activeBackgroundIndex = ref(load<number>('activeBackgroundIndex', 0))
   const backgroundLayers = ref<BackgroundLayer[]>([])
+  const backgroundZoom = ref(clampZoom(load<number>('backgroundZoom', DEFAULT_ZOOM)))
 
   const baseGradient = computed(() => 'var(--dh-backdrop)')
 
@@ -125,7 +144,25 @@ export function useBackgrounds() {
         backgroundLayers.value = []
         return
       }
-      const newLayer: BackgroundLayer = { id: `${next.id}-${Date.now()}`, url: next.url }
+      const newLayer: BackgroundLayer = (() => {
+        const angle = Math.random() * Math.PI * 2
+        const distance = 4 + Math.random() * 6
+        const offsetX = Math.cos(angle) * distance
+        const offsetY = Math.sin(angle) * distance
+        const durationMs = 70000 + Math.random() * 40000
+        const scale = clampZoom(backgroundZoom.value)
+
+        return {
+          id: `${next.id}-${Date.now()}`,
+          url: next.url,
+          panFromX: -offsetX,
+          panFromY: -offsetY,
+          panToX: offsetX,
+          panToY: offsetY,
+          durationMs,
+          scale,
+        }
+      })()
       const previous = backgroundLayers.value[0]
       backgroundLayers.value = previous ? [newLayer, ...backgroundLayers.value] : [newLayer]
       if (previous && typeof window !== 'undefined') {
@@ -177,6 +214,24 @@ export function useBackgrounds() {
     clearFadeTimers()
   })
 
+  watch(
+    backgroundZoom,
+    (value) => {
+      const clamped = clampZoom(value)
+      if (clamped !== value) {
+        backgroundZoom.value = clamped
+        return
+      }
+      save('backgroundZoom', clamped)
+      backgroundLayers.value = backgroundLayers.value.map((layer) => ({ ...layer, scale: clamped }))
+    },
+    { immediate: true },
+  )
+
+  const setBackgroundZoom = (value: number) => {
+    backgroundZoom.value = clampZoom(value)
+  }
+
   return {
     backgroundImages,
     activeBackgroundIndex,
@@ -187,5 +242,9 @@ export function useBackgrounds() {
     hasBackgrounds,
     handleBackgroundUpload,
     clearBackgrounds,
+    backgroundZoom,
+    backgroundZoomMin: ZOOM_MIN,
+    backgroundZoomMax: ZOOM_MAX,
+    setBackgroundZoom,
   }
 }
