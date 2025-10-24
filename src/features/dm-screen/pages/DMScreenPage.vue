@@ -71,12 +71,16 @@
             :active-widget-id="activeWidgetId"
             :background-count="backgroundImages.length"
             :has-backgrounds="hasBackgrounds"
+            :background-zoom="backgroundZoom"
+            :background-zoom-min="backgroundZoomMin"
+            :background-zoom-max="backgroundZoomMax"
             @update:size="handleSizeSelect"
             @update:type="handleTypeSelect"
             @create:widget="addWidget"
             @clear-backgrounds="clearBackgrounds"
             @focus-widget="focusWidget"
             @upload-backgrounds="handleBackgroundUpload"
+            @update:background-zoom="setBackgroundZoom"
             @close="toggleSidebar"
           />
         </Transition>
@@ -116,6 +120,10 @@ const {
   hasBackgrounds,
   handleBackgroundUpload,
   clearBackgrounds,
+  backgroundZoom,
+  backgroundZoomMin,
+  backgroundZoomMax,
+  setBackgroundZoom,
 } = useBackgrounds()
 
 const {
