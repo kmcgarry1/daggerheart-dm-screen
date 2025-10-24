@@ -4,7 +4,16 @@ import type { CSSProperties } from 'vue'
 import { createIdGenerator, load, save, reportError } from '@/shared/utils'
 
 export type BackgroundSlide = { id: string; url: string }
-export type BackgroundLayer = { id: string; url: string }
+export type BackgroundLayer = {
+  id: string
+  url: string
+  panFromX: number
+  panFromY: number
+  panToX: number
+  panToY: number
+  durationMs: number
+  scale: number
+}
 
 const createBackgroundId = createIdGenerator('bg')
 
@@ -125,7 +134,25 @@ export function useBackgrounds() {
         backgroundLayers.value = []
         return
       }
-      const newLayer: BackgroundLayer = { id: `${next.id}-${Date.now()}`, url: next.url }
+      const newLayer: BackgroundLayer = (() => {
+        const angle = Math.random() * Math.PI * 2
+        const distance = 4 + Math.random() * 6
+        const offsetX = Math.cos(angle) * distance
+        const offsetY = Math.sin(angle) * distance
+        const durationMs = 70000 + Math.random() * 40000
+        const scale = 1.06 + Math.random() * 0.04
+
+        return {
+          id: `${next.id}-${Date.now()}`,
+          url: next.url,
+          panFromX: -offsetX,
+          panFromY: -offsetY,
+          panToX: offsetX,
+          panToY: offsetY,
+          durationMs,
+          scale,
+        }
+      })()
       const previous = backgroundLayers.value[0]
       backgroundLayers.value = previous ? [newLayer, ...backgroundLayers.value] : [newLayer]
       if (previous && typeof window !== 'undefined') {

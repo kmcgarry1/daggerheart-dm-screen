@@ -330,23 +330,23 @@
     position: relative;
 }
 
-.dh-ambient .dh-background-gradient,
-.dh-ambient .dh-background-layer {
+.dh-ambient .dh-background-gradient {
     animation: dh-ambient-background 240s ease-in-out infinite;
     transform-origin: center;
     will-change: transform, filter;
-}
-
-.dh-ambient .dh-background-gradient {
     animation-delay: 6s;
 }
 
-.dh-ambient .dh-background-layer:nth-of-type(odd) {
-    animation-delay: 12s;
-}
-
-.dh-ambient .dh-background-layer:nth-of-type(even) {
-    animation-delay: 18s;
+.dh-ambient .dh-background-layer {
+    --dh-pan-duration: 90000ms;
+    --dh-pan-from-x: 0%;
+    --dh-pan-from-y: 0%;
+    --dh-pan-to-x: 0%;
+    --dh-pan-to-y: 0%;
+    --dh-pan-scale: 1.08;
+    animation: dh-background-pan var(--dh-pan-duration) ease-in-out infinite alternate;
+    transform-origin: center;
+    will-change: transform;
 }
 
 .dh-ambient .dh-card {
@@ -402,6 +402,18 @@
     8% {
         transform: scale(1.008) translate3d(0.3%, -0.3%, 0);
         filter: saturate(102%);
+    }
+}
+
+@keyframes dh-background-pan {
+    0% {
+        transform: scale(var(--dh-pan-scale, 1.08))
+            translate3d(var(--dh-pan-from-x, 0%), var(--dh-pan-from-y, 0%), 0);
+    }
+
+    100% {
+        transform: scale(var(--dh-pan-scale, 1.08))
+            translate3d(var(--dh-pan-to-x, 0%), var(--dh-pan-to-y, 0%), 0);
     }
 }
 
