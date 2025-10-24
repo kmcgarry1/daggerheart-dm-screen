@@ -76,14 +76,7 @@ export function watchDebounced(
   const stop = watch(
     source as WatchSource<unknown>,
     (value, oldValue) => {
-      if (timer !== null) {
-        clearTimeout(timer)
-        timer = null
-      }
-      if (maxTimer !== null) {
-        clearTimeout(maxTimer)
-        maxTimer = null
-      }
+      clearTimers()
       schedule(value, oldValue)
     },
     watchOptions as WatchOptions<unknown>,
