@@ -39,6 +39,7 @@ const layerStyle = (layer: BackgroundLayer): Record<string, string> => ({
   '--dh-pan-to-x': formatPercent(layer.panToX),
   '--dh-pan-to-y': formatPercent(layer.panToY),
   '--dh-pan-duration': `${Math.round(layer.durationMs)}ms`,
-  '--dh-pan-scale': layer.scale.toString(),
+  '--dh-pan-from-scale': layer.scaleFrom.toString(),
+  '--dh-pan-to-scale': layer.scaleTo.toString(),
 })
 </script>
