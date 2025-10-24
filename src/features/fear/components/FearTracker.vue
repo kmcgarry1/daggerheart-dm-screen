@@ -149,7 +149,7 @@ const handleUpdate = (value: number) => {
 .fear-tracker__compact-label {
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   color: var(--fear-chip-text);
 }
 
