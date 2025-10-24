@@ -21,7 +21,7 @@
       </div>
 
       <ScreenWorkspace
-        :widgets="widgets"
+        :widgets="visibleWidgets"
         :active-widget-id="activeWidgetId"
         :size-options="sizeOptions"
         :span-class-for-size="widgetSpanClass"
@@ -97,7 +97,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { ref } from 'vue'
+
+import { watchDebounced } from '@/shared/utils'
 
 import ScreenBackground from '@/features/dm-screen/components/ScreenBackground.vue'
 import ScreenFloatingControls from '@/features/dm-screen/components/ScreenFloatingControls.vue'
@@ -107,8 +109,7 @@ import ScreenToolbar from '@/features/dm-screen/components/ScreenToolbar.vue'
 import ScreenWorkspace from '@/features/dm-screen/components/ScreenWorkspace.vue'
 import { useTheme } from '@/shared/composables/useTheme'
 import { useBackgrounds, useFear, useWidgets } from '@/features/dm-screen/composables'
-import { computeYouTubeEmbed, load, save } from '@/shared/utils'
-import type { DashboardWidget, YoutubeWidget } from '@/features/dm-screen/widgets'
+import { load, save } from '@/shared/utils'
 
 const { darkMode, toggleDarkMode: toggleTheme } = useTheme()
 const { fearLevel, setFearLevel } = useFear()
@@ -128,6 +129,7 @@ const {
 
 const {
   widgets,
+  visibleWidgets,
   sizeOptions,
   widgetTypeOptions,
   nextWidgetSize,
@@ -148,6 +150,7 @@ const {
   dockLabel,
   widgetIcon,
   countdownDockLabel,
+  youtubeBackgroundSrc,
 } = useWidgets()
 
 const sidebarCollapsed = ref(load<boolean>('sidebarCollapsed', false))
@@ -163,16 +166,12 @@ const toggleWidgets = () => {
   widgetsCollapsed.value = !widgetsCollapsed.value
 }
 
-watch(sidebarCollapsed, (v) => save('sidebarCollapsed', v))
-watch(widgetsCollapsed, (v) => save('widgetsCollapsed', v))
-
-const isYoutubeBackgroundWidget = (widget: DashboardWidget): widget is YoutubeWidget =>
-  widget.type === 'youtube' && widget.background && Boolean(widget.url)
-
-const youtubeBackgroundSrc = computed(() => {
-  const yt = widgets.value.find(isYoutubeBackgroundWidget)
-  if (!yt) return null
-  const embed = computeYouTubeEmbed(yt.url)
-  return embed || null
+watchDebounced(sidebarCollapsed, (value) => save('sidebarCollapsed', value), {
+  debounce: 200,
+  maxWait: 1000,
+})
+watchDebounced(widgetsCollapsed, (value) => save('widgetsCollapsed', value), {
+  debounce: 200,
+  maxWait: 1000,
 })
 </script>
