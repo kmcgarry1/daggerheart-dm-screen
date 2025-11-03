@@ -8,6 +8,7 @@ import {
   useWidgetFactory,
   useWidgetFocus,
   useWidgetPersistence,
+  type DashboardWidget,
   type WidgetUpdatePayload,
 } from '@/features/dm-screen/widgets'
 import type { YoutubeWidget } from '@/features/dm-screen/widgets'

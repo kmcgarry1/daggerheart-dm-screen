@@ -10,7 +10,7 @@ interface InternalWatchOptions<T> extends WatchOptions<T> {
 export function watchDebounced<T>(
   source: WatchSource<T>,
   callback: WatchCallback<T, T | undefined>,
-  options: InternalWatchOptions<T> = {},
+  options?: InternalWatchOptions<T>,
 ): WatchStopHandle
 export function watchDebounced<T extends ReadonlyArray<unknown>>(
   source: WatchSource<T[number]>[],
@@ -79,7 +79,7 @@ export function watchDebounced(
       clearTimers()
       schedule(value, oldValue)
     },
-    watchOptions as WatchOptions<unknown>,
+    watchOptions as WatchOptions,
   )
 
   return () => {
