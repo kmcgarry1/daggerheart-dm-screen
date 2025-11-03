@@ -92,6 +92,34 @@
           <label
             class="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
           >
+            <span>Video Dimming</span>
+            <div class="flex items-center gap-3 text-[color:var(--dh-panel-text)]">
+              <input
+                :value="videoOverlay"
+                type="range"
+                :min="videoOverlayMin"
+                :max="videoOverlayMax"
+                :step="videoOverlayStep"
+                class="h-2 w-full cursor-pointer appearance-none rounded-full bg-[color:var(--dh-panel-border)] accent-violet-400 disabled:cursor-not-allowed disabled:opacity-50"
+                :disabled="!videoOverlayEnabled"
+                @input="onVideoOverlayInput"
+              />
+              <span class="text-sm font-semibold tabular-nums">{{ dimmingDisplay }}</span>
+            </div>
+            <span v-if="!videoOverlayEnabled" class="text-[color:var(--dh-panel-muted)]">
+              Add a YouTube widget and mark it as a background to enable dimming.
+            </span>
+          </label>
+          <button
+            type="button"
+            class="dh-toggle dh-toggle--subtle justify-center text-sm"
+            @click="$emit('toggle-motion')"
+          >
+            {{ reduceMotion ? 'Resume Ambient Motion' : 'Pause Ambient Motion' }}
+          </button>
+          <label
+            class="flex flex-col gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--dh-panel-muted)]"
+          >
             <span>Backdrop Zoom</span>
             <div class="flex items-center gap-3 text-[color:var(--dh-panel-text)]">
               <input
@@ -206,6 +234,12 @@ const props = defineProps<{
   backgroundZoom: number
   backgroundZoomMin: number
   backgroundZoomMax: number
+  videoOverlay: number
+  videoOverlayMin: number
+  videoOverlayMax: number
+  videoOverlayStep: number
+  videoOverlayEnabled: boolean
+  reduceMotion: boolean
 }>()
 
 const emit = defineEmits<{
@@ -217,6 +251,8 @@ const emit = defineEmits<{
   (e: 'focus-widget', id: string): void
   (e: 'close'): void
   (e: 'update:background-zoom', value: number): void
+  (e: 'update:video-overlay', value: number): void
+  (e: 'toggle-motion'): void
 }>()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -234,10 +270,17 @@ const {
   backgroundZoom,
   backgroundZoomMin,
   backgroundZoomMax,
+  videoOverlay,
+  videoOverlayMin,
+  videoOverlayMax,
+  videoOverlayStep,
+  videoOverlayEnabled,
+  reduceMotion,
 } = toRefs(props)
 
 const selectedTypeOption = computed(() => getWidgetTypeOption(nextWidgetType.value))
 const zoomDisplay = computed(() => `${Math.round(backgroundZoom.value * 100)}%`)
+const dimmingDisplay = computed(() => `${Math.round(videoOverlay.value * 100)}%`)
 
 const triggerUpload = () => {
   fileInputRef.value?.click()
@@ -255,6 +298,12 @@ const onBackgroundZoomInput = (event: Event) => {
   const target = event.target as HTMLInputElement | null
   if (!target) return
   emit('update:background-zoom', Number(target.value))
+}
+
+const onVideoOverlayInput = (event: Event) => {
+  const target = event.target as HTMLInputElement | null
+  if (!target) return
+  emit('update:video-overlay', Number(target.value))
 }
 
 const sizeLabel = (size: WidgetSize) => getSizeLabel(size)

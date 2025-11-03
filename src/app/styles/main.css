@@ -11,7 +11,6 @@
     --dh-silver: #64748b;
     --dh-ivory: #fdfbff;
     --dh-muted: rgba(30, 41, 59, 0.6);
-    --dh-highlight: #38bdf8;
     --dh-danger: #f43f5e;
     --dh-ink: rgba(15, 23, 42, 0.85);
 
@@ -21,9 +20,10 @@
     --dh-panel-border: rgba(203, 213, 225, 0.55);
     --dh-panel-text: rgba(15, 23, 42, 0.92);
     --dh-panel-muted: rgba(71, 85, 105, 0.68);
-    --dh-shadow: rgba(99, 102, 241, 0.18);
+    --dh-shadow: rgba(99, 102, 241, 0.12);
     --dh-ghost-border: rgba(99, 102, 241, 0.24);
-    --dh-ghost-shadow: rgba(99, 102, 241, 0.22);
+    --dh-ghost-shadow: rgba(99, 102, 241, 0.16);
+    --dh-toggle-hover: rgba(99, 102, 241, 0.12);
 
     --dh-ambient-glow: rgba(99, 102, 241, 0.3);
     --dh-ambient-shadow-strong: rgba(99, 102, 241, 0.35);
@@ -67,9 +67,10 @@
     --dh-panel-border: rgba(148, 163, 184, 0.38);
     --dh-panel-text: rgba(226, 232, 240, 0.94);
     --dh-panel-muted: rgba(148, 163, 184, 0.7);
-    --dh-shadow: rgba(8, 47, 73, 0.45);
+    --dh-shadow: rgba(8, 47, 73, 0.32);
     --dh-ghost-border: rgba(99, 102, 241, 0.4);
-    --dh-ghost-shadow: rgba(37, 99, 235, 0.34);
+    --dh-ghost-shadow: rgba(37, 99, 235, 0.26);
+    --dh-toggle-hover: rgba(79, 70, 229, 0.22);
 
     --dh-ambient-glow: rgba(129, 140, 248, 0.45);
     --dh-ambient-shadow-strong: rgba(37, 99, 235, 0.5);
@@ -241,9 +242,9 @@
         border: 1px solid var(--dh-panel-border);
         background: var(--dh-panel-bg);
         color: var(--dh-panel-text);
-        box-shadow: 0 22px 44px var(--dh-shadow);
-        backdrop-filter: blur(28px) saturate(180%);
-        transition: all 0.3s ease;
+        box-shadow: 0 16px 32px var(--dh-shadow);
+        backdrop-filter: blur(18px) saturate(165%);
+        transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
     .dh-panel-muted {
@@ -262,31 +263,42 @@
         padding: 0.5rem 1rem;
         font-size: 0.85rem;
         font-weight: 600;
-        box-shadow: 0 12px 28px var(--dh-ghost-shadow);
-        transition: transform 0.18s ease, box-shadow 0.22s ease, border-color 0.2s ease;
+        box-shadow: 0 10px 22px var(--dh-ghost-shadow);
+        transition:
+            transform 0.16s ease,
+            box-shadow 0.22s ease,
+            border-color 0.2s ease,
+            background-color 0.2s ease;
     }
 
     .dh-toggle--subtle {
         background: rgba(255, 255, 255, 0.5);
         color: var(--dh-panel-muted);
-        border-color: rgba(148, 163, 184, 0.45);
-        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+        border-color: rgba(148, 163, 184, 0.4);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1);
     }
 
     :root[data-theme='dark'] .dh-toggle--subtle {
         background: rgba(17, 24, 39, 0.48);
-        box-shadow: 0 8px 18px rgba(8, 47, 73, 0.32);
+        box-shadow: 0 8px 18px rgba(8, 47, 73, 0.24);
     }
 
     .dh-toggle:hover {
-        transform: translateY(-2px);
-        border-color: rgba(168, 85, 247, 0.55);
-        box-shadow: 0 18px 36px rgba(99, 102, 241, 0.28);
+        transform: translateY(-1px);
+        border-color: rgba(168, 85, 247, 0.45);
+        background-color: var(--dh-toggle-hover);
+        box-shadow: 0 14px 26px var(--dh-ghost-shadow);
     }
 
     .dh-toggle--subtle:hover {
-        border-color: rgba(129, 140, 248, 0.45);
-        box-shadow: 0 16px 26px rgba(37, 99, 235, 0.24);
+        border-color: rgba(129, 140, 248, 0.38);
+        box-shadow: 0 12px 22px rgba(37, 99, 235, 0.18);
+    }
+
+    .dh-toggle--icon {
+        padding: 0.5rem;
+        width: 2.75rem;
+        height: 2.75rem;
     }
 
     .dh-pill {
@@ -355,6 +367,22 @@
     animation-fill-mode: both;
     transform-origin: center;
     will-change: transform;
+}
+
+.dh-ambient.motion-reduced .dh-background-gradient,
+.dh-ambient.motion-reduced .dh-background-layer,
+.dh-ambient.motion-reduced .dh-card::after,
+.dh-ambient.motion-reduced :where(h1, h2, h3, h4, h5, h6, p, label, dt, dd, li, strong) {
+    animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dh-ambient .dh-background-gradient,
+    .dh-ambient .dh-background-layer,
+    .dh-ambient .dh-card::after,
+    .dh-ambient :where(h1, h2, h3, h4, h5, h6, p, label, dt, dd, li, strong) {
+        animation: none !important;
+    }
 }
 
 .dh-ambient .dh-card {

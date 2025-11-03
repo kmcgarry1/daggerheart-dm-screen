@@ -12,7 +12,7 @@
       <div
         v-if="!collapsed"
         key="workspace-grid"
-        class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
+        class="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(22rem,1fr))]"
       >
         <WidgetCardShell
           v-for="widget in widgets"
