@@ -26,31 +26,44 @@ export function watchDebounced(
   let timer: ReturnType<typeof setTimeout> | null = null
   let maxTimer: ReturnType<typeof setTimeout> | null = null
   let hasPending = false
+  let lastValue: unknown
+  let lastOldValue: unknown
 
-  const clearTimers = () => {
+  const clearDebounceTimer = () => {
     if (timer !== null) {
       clearTimeout(timer)
       timer = null
     }
+  }
+
+  const clearMaxTimer = () => {
     if (maxTimer !== null) {
       clearTimeout(maxTimer)
       maxTimer = null
     }
   }
 
+  const clearTimers = () => {
+    clearDebounceTimer()
+    clearMaxTimer()
+  }
+
   const runCallback = (value: unknown, oldValue: unknown) => {
     ;(callback as WatchCallback<unknown, unknown>)(value, oldValue, () => {})
   }
 
-  const flush = (value: unknown, oldValue: unknown) => {
+  const flush = () => {
     clearTimers()
     hasPending = false
-    runCallback(value, oldValue)
+    runCallback(lastValue, lastOldValue)
   }
 
   const schedule = (value: unknown, oldValue: unknown) => {
+    lastValue = value
+    lastOldValue = oldValue
+
     if (debounce <= 0) {
-      flush(value, oldValue)
+      runCallback(value, oldValue)
       return
     }
 
@@ -59,16 +72,16 @@ export function watchDebounced(
     }
 
     hasPending = true
-    clearTimers()
+    clearDebounceTimer()
 
     timer = setTimeout(() => {
-      flush(value, oldValue)
+      flush()
     }, debounce)
 
-    if (typeof maxWait === 'number' && maxWait > 0) {
+    if (typeof maxWait === 'number' && maxWait > 0 && maxTimer === null) {
       const limit = Math.max(0, maxWait)
       maxTimer = setTimeout(() => {
-        flush(value, oldValue)
+        flush()
       }, limit)
     }
   }

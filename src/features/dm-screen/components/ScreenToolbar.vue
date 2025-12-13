@@ -1,6 +1,13 @@
 <template>
   <div class="space-y-4">
     <div class="flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+      <RouterLink
+        to="/widget-library"
+        class="dh-toggle flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold"
+        aria-label="Open widget library"
+      >
+        Widget Library
+      </RouterLink>
       <button
         type="button"
         class="dh-toggle dh-toggle--icon"
@@ -81,6 +88,8 @@
 </template>
 
 <script lang="ts" setup>
+import { RouterLink } from 'vue-router'
+
 import { FearTracker } from '@/features/fear'
 
 defineProps<{

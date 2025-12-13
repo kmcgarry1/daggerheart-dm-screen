@@ -43,7 +43,10 @@ const clampZoom = (value: number) => {
   return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, value))
 }
 
+const isBlobUrl = (url: string) => url.startsWith('blob:')
+
 const releaseObjectUrl = (url: string, action: string) => {
+  if (!isBlobUrl(url)) return
   try {
     URL.revokeObjectURL(url)
   } catch (error) {
@@ -60,12 +63,47 @@ const isPersistableSlide = (slide: BackgroundSlide | null | undefined): slide is
   return typeof slide.id === 'string' && typeof slide.url === 'string' && slide.id.length > 0 && slide.url.length > 0
 }
 
-const hydrateSlides = (slides: BackgroundSlide[]) => slides.filter(isPersistableSlide).map((slide) => ({ ...slide }))
+const isSerializableSlide = (slide: BackgroundSlide | null | undefined): slide is BackgroundSlide =>
+  Boolean(slide && isPersistableSlide(slide) && !isBlobUrl(slide.url))
+
+const hydrateSlides = (slides: BackgroundSlide[]) => slides.filter(isSerializableSlide).map((slide) => ({ ...slide }))
 
 const serializeSlides = (slides: BackgroundSlide[]) =>
-  slides
-    .filter((slide) => isPersistableSlide(slide) && !slide.url.startsWith('blob:'))
-    .map((slide) => ({ id: slide.id, url: slide.url }))
+  slides.filter(isSerializableSlide).map((slide) => ({ id: slide.id, url: slide.url }))
+
+const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(buffer).toString('base64')
+  }
+  let binary = ''
+  const bytes = new Uint8Array(buffer)
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte)
+  }
+  if (typeof btoa === 'function') {
+    return btoa(binary)
+  }
+  throw new Error('Base64 encoding is not supported in this environment.')
+}
+
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  if (typeof FileReader !== 'undefined') {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result))
+      reader.onerror = () => reject(reader.error)
+      reader.readAsDataURL(file)
+    })
+  }
+
+  if (typeof file.arrayBuffer === 'function') {
+    return file
+      .arrayBuffer()
+      .then((buffer) => `data:${file.type || 'application/octet-stream'};base64,${arrayBufferToBase64(buffer)}`)
+  }
+
+  return Promise.reject(new Error('File APIs are not available in this environment.'))
+}
 
 const slidesEqual = (a: BackgroundSlide[], b: BackgroundSlide[]) => {
   if (a.length !== b.length) return false
@@ -270,10 +308,11 @@ export function useBackgrounds() {
     }
   }
 
-  const handleBackgroundUpload = (files: File[]) => {
+  const handleBackgroundUpload = async (files: File[]) => {
     if (!files.length) return
     try {
-      const nextSlides = files.map((file) => ({ id: createBackgroundId(), url: URL.createObjectURL(file) }))
+      const dataUrls = await Promise.all(files.map((file) => readFileAsDataUrl(file)))
+      const nextSlides = dataUrls.map((url) => ({ id: createBackgroundId(), url }))
       backgroundImages.value = [...nextSlides, ...backgroundImages.value]
       activeBackgroundIndex.value = 0
       startBackgroundTimer()
