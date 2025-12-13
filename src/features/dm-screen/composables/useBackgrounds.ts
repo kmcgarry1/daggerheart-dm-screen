@@ -1,7 +1,7 @@
-import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { computed, ref, shallowRef, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { CSSProperties } from 'vue'
 
-import { createIdGenerator, load, save, reportError } from '@/shared/utils'
+import { watchDebounced, createIdGenerator, load, save, reportError } from '@/shared/utils'
 
 export type BackgroundSlide = { id: string; url: string }
 export type BackgroundLayer = {
@@ -12,7 +12,22 @@ export type BackgroundLayer = {
   panToX: number
   panToY: number
   durationMs: number
-  scale: number
+  delayMs: number
+  scaleFrom: number
+  scaleTo: number
+}
+
+type BackgroundAnimationDescriptor = {
+  id: string
+  slideId: string
+  panFromX: number
+  panFromY: number
+  panToX: number
+  panToY: number
+  durationMs: number
+  zoomVariance: number
+  reverseZoom: boolean
+  delayMs: number
 }
 
 const createBackgroundId = createIdGenerator('bg')
@@ -28,7 +43,10 @@ const clampZoom = (value: number) => {
   return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, value))
 }
 
+const isBlobUrl = (url: string) => url.startsWith('blob:')
+
 const releaseObjectUrl = (url: string, action: string) => {
+  if (!isBlobUrl(url)) return
   try {
     URL.revokeObjectURL(url)
   } catch (error) {
@@ -40,10 +58,103 @@ const releaseObjectUrl = (url: string, action: string) => {
   }
 }
 
+const isPersistableSlide = (slide: BackgroundSlide | null | undefined): slide is BackgroundSlide => {
+  if (!slide) return false
+  return typeof slide.id === 'string' && typeof slide.url === 'string' && slide.id.length > 0 && slide.url.length > 0
+}
+
+const isSerializableSlide = (slide: BackgroundSlide | null | undefined): slide is BackgroundSlide =>
+  Boolean(slide && isPersistableSlide(slide) && !isBlobUrl(slide.url))
+
+const hydrateSlides = (slides: BackgroundSlide[]) => slides.filter(isSerializableSlide).map((slide) => ({ ...slide }))
+
+const serializeSlides = (slides: BackgroundSlide[]) =>
+  slides.filter(isSerializableSlide).map((slide) => ({ id: slide.id, url: slide.url }))
+
+const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(buffer).toString('base64')
+  }
+  let binary = ''
+  const bytes = new Uint8Array(buffer)
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte)
+  }
+  if (typeof btoa === 'function') {
+    return btoa(binary)
+  }
+  throw new Error('Base64 encoding is not supported in this environment.')
+}
+
+const readFileAsDataUrl = (file: File): Promise<string> => {
+  if (typeof FileReader !== 'undefined') {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result))
+      reader.onerror = () => reject(reader.error)
+      reader.readAsDataURL(file)
+    })
+  }
+
+  if (typeof file.arrayBuffer === 'function') {
+    return file
+      .arrayBuffer()
+      .then((buffer) => `data:${file.type || 'application/octet-stream'};base64,${arrayBufferToBase64(buffer)}`)
+  }
+
+  return Promise.reject(new Error('File APIs are not available in this environment.'))
+}
+
+const slidesEqual = (a: BackgroundSlide[], b: BackgroundSlide[]) => {
+  if (a.length !== b.length) return false
+  return a.every((slide, index) => {
+    const other = b[index]
+    return other !== undefined && other.id === slide.id && other.url === slide.url
+  })
+}
+
+const createAnimationDescriptor = (slideId: string): BackgroundAnimationDescriptor => {
+  const randomOffset = () => {
+    const angle = Math.random() * Math.PI * 2
+    const distance = 3.5 + Math.random() * 5.5
+    return {
+      x: Math.cos(angle) * distance,
+      y: Math.sin(angle) * distance,
+    }
+  }
+
+  let from = randomOffset()
+  let to = randomOffset()
+  let attempts = 0
+  while (Math.hypot(to.x - from.x, to.y - from.y) < 2.4 && attempts < 5) {
+    to = randomOffset()
+    attempts += 1
+  }
+
+  const durationMs = Math.round(24000 + Math.random() * 16000)
+  const zoomVariance = 0.12 + Math.random() * 0.1
+  const initialProgress = Math.random()
+  const delayMs = -Math.round(initialProgress * durationMs)
+
+  return {
+    id: `${slideId}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
+    slideId,
+    panFromX: from.x,
+    panFromY: from.y,
+    panToX: to.x,
+    panToY: to.y,
+    durationMs,
+    zoomVariance,
+    reverseZoom: Math.random() > 0.5,
+    delayMs,
+  }
+}
+
 export function useBackgrounds() {
-  const backgroundImages = ref<BackgroundSlide[]>(load<BackgroundSlide[]>('backgroundImages', []))
+  const persistedSlides = ref<BackgroundSlide[]>(hydrateSlides(load<BackgroundSlide[]>('backgroundImages', [])))
+  const backgroundImages = ref<BackgroundSlide[]>(persistedSlides.value.map((slide) => ({ ...slide })))
   const activeBackgroundIndex = ref(load<number>('activeBackgroundIndex', 0))
-  const backgroundLayers = ref<BackgroundLayer[]>([])
+  const animationQueue = shallowRef<BackgroundAnimationDescriptor[]>([])
   const backgroundZoom = ref(clampZoom(load<number>('backgroundZoom', DEFAULT_ZOOM)))
 
   const baseGradient = computed(() => 'var(--dh-backdrop)')
@@ -53,19 +164,104 @@ export function useBackgrounds() {
   const screenStyle = computed<CSSProperties>(() => {
     const gradient = baseGradient.value
     const slide = currentSlide.value
-    if (!slide) {
+    const hasLayers = animationQueue.value.length > 0
+    const baseStyle: CSSProperties = {
+      backgroundImage: gradient,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }
+    if (!slide) return baseStyle
+    if (!hasLayers) {
       return {
-        backgroundImage: gradient,
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
+        ...baseStyle,
+        backgroundImage: `${gradient}, url('${slide.url}')`,
+        backgroundSize: 'cover, cover',
+        backgroundPosition: 'center, center',
+        backgroundRepeat: 'no-repeat, no-repeat',
       }
     }
     return {
-      backgroundImage: `${gradient}, url('${slide.url}')`,
-      backgroundSize: 'cover, cover',
-      backgroundPosition: 'center, center',
-      backgroundRepeat: 'no-repeat, no-repeat',
+      ...baseStyle,
     }
+  })
+
+  const hasBackgrounds = computed(() => backgroundImages.value.length > 0)
+
+  const slidesById = computed(() => {
+    const map = new Map<string, BackgroundSlide>()
+    for (const slide of backgroundImages.value) {
+      map.set(slide.id, slide)
+    }
+    return map
+  })
+
+  const backgroundLayers = computed<BackgroundLayer[]>(() => {
+    if (animationQueue.value.length === 0) return []
+    const map = slidesById.value
+    const baseScale = clampZoom(backgroundZoom.value)
+    return animationQueue.value
+      .map((descriptor) => {
+        const slide = map.get(descriptor.slideId)
+        if (!slide) return null
+        const halfDelta = Math.abs(descriptor.zoomVariance) / 2
+        let scaleStart = baseScale - halfDelta
+        let scaleEnd = baseScale + halfDelta
+        if (descriptor.reverseZoom) {
+          ;[scaleStart, scaleEnd] = [scaleEnd, scaleStart]
+        }
+
+        const maxOffsetX = Math.max(Math.abs(descriptor.panFromX), Math.abs(descriptor.panToX))
+        const maxOffsetY = Math.max(Math.abs(descriptor.panFromY), Math.abs(descriptor.panToY))
+        const maxOffset = Math.max(maxOffsetX, maxOffsetY)
+        const minScaleForOffsets = Math.min(ZOOM_MAX, 1 + maxOffset / 50)
+
+        const currentMin = Math.min(scaleStart, scaleEnd)
+        if (currentMin < minScaleForOffsets) {
+          const increase = minScaleForOffsets - currentMin
+          scaleStart += increase
+          scaleEnd += increase
+        }
+
+        const currentMax = Math.max(scaleStart, scaleEnd)
+        if (currentMax > ZOOM_MAX) {
+          const overshoot = currentMax - ZOOM_MAX
+          scaleStart -= overshoot
+          scaleEnd -= overshoot
+        }
+
+        scaleStart = clampZoom(scaleStart)
+        scaleEnd = clampZoom(scaleEnd)
+
+        const adjustedMin = Math.min(scaleStart, scaleEnd)
+        if (adjustedMin < minScaleForOffsets) {
+          const delta = Math.min(
+            minScaleForOffsets - adjustedMin,
+            Math.max(0, ZOOM_MAX - Math.max(scaleStart, scaleEnd)),
+          )
+          scaleStart = clampZoom(scaleStart + delta)
+          scaleEnd = clampZoom(scaleEnd + delta)
+          const finalMin = Math.min(scaleStart, scaleEnd)
+          if (finalMin < minScaleForOffsets) {
+            scaleStart = clampZoom(Math.max(scaleStart, minScaleForOffsets))
+            scaleEnd = clampZoom(Math.max(scaleEnd, minScaleForOffsets))
+          }
+        }
+
+        return {
+          id: descriptor.id,
+          url: slide.url,
+          panFromX: descriptor.panFromX,
+          panFromY: descriptor.panFromY,
+          panToX: descriptor.panToX,
+          panToY: descriptor.panToY,
+          durationMs: descriptor.durationMs,
+          delayMs: descriptor.delayMs,
+          scaleFrom: scaleStart,
+          scaleTo: scaleEnd,
+        }
+      })
+      .filter((layer): layer is BackgroundLayer => layer !== null)
   })
 
   let backgroundTimer: number | null = null
@@ -76,6 +272,17 @@ export function useBackgrounds() {
     if (typeof window === 'undefined') return
     fadeTimers.forEach((timer) => window.clearTimeout(timer))
     fadeTimers.clear()
+  }
+
+  const cancelFadeTimer = (id: string) => {
+    if (typeof window === 'undefined') return
+    if (!fadeTimers.has(id)) return
+    window.clearTimeout(fadeTimers.get(id)!)
+    fadeTimers.delete(id)
+  }
+
+  const removeAnimationDescriptor = (id: string) => {
+    animationQueue.value = animationQueue.value.filter((descriptor) => descriptor.id !== id)
   }
 
   const stopBackgroundTimer = () => {
@@ -94,10 +301,18 @@ export function useBackgrounds() {
     }, 12000)
   }
 
-  const handleBackgroundUpload = (files: File[]) => {
+  const syncPersistedSlides = (slides: BackgroundSlide[]) => {
+    const serialized = serializeSlides(slides)
+    if (!slidesEqual(serialized, persistedSlides.value)) {
+      persistedSlides.value = serialized
+    }
+  }
+
+  const handleBackgroundUpload = async (files: File[]) => {
     if (!files.length) return
     try {
-      const nextSlides = files.map((file) => ({ id: createBackgroundId(), url: URL.createObjectURL(file) }))
+      const dataUrls = await Promise.all(files.map((file) => readFileAsDataUrl(file)))
+      const nextSlides = dataUrls.map((url) => ({ id: createBackgroundId(), url }))
       backgroundImages.value = [...nextSlides, ...backgroundImages.value]
       activeBackgroundIndex.value = 0
       startBackgroundTimer()
@@ -110,97 +325,103 @@ export function useBackgrounds() {
   }
 
   const clearBackgrounds = () => {
-    backgroundImages.value.forEach((slide) => releaseObjectUrl(slide.url, 'revoke'))
     backgroundImages.value = []
     activeBackgroundIndex.value = 0
     stopBackgroundTimer()
     clearFadeTimers()
-    backgroundLayers.value = []
+    animationQueue.value = []
   }
 
-  const hasBackgrounds = computed(() => backgroundImages.value.length > 0)
+  const scheduleFadeOut = (id: string) => {
+    if (typeof window === 'undefined') return
+    cancelFadeTimer(id)
+    try {
+      const timer = window.setTimeout(() => {
+        try {
+          removeAnimationDescriptor(id)
+        } catch (error) {
+          reportError('We could not update the background transition.', error, {
+            context: backgroundContext('transition'),
+            tone: 'warning',
+          })
+        } finally {
+          cancelFadeTimer(id)
+        }
+      }, crossfadeMs)
+      fadeTimers.set(id, timer)
+    } catch (error) {
+      reportError('We could not update the background transition.', error, {
+        context: backgroundContext('transition'),
+        tone: 'warning',
+      })
+    }
+  }
+
+  const pushAnimationForSlide = (slideId: string) => {
+    const descriptor = createAnimationDescriptor(slideId)
+    const previous = animationQueue.value[0]
+    const updated = [descriptor, ...animationQueue.value]
+    const trimmed = updated.slice(0, 2)
+    const extras = updated.slice(2)
+    extras.forEach((extra) => cancelFadeTimer(extra.id))
+    animationQueue.value = trimmed
+    if (previous) {
+      scheduleFadeOut(previous.id)
+    }
+  }
 
   watch(
-    () => backgroundImages.value.length,
-    (length) => {
-      if (length === 0) {
-        activeBackgroundIndex.value = 0
-      } else {
-        activeBackgroundIndex.value = Math.min(activeBackgroundIndex.value, length - 1)
+    backgroundImages,
+    (slides, previousSlides = []) => {
+      syncPersistedSlides(slides)
+
+      const previousMap = new Map(previousSlides.map((slide) => [slide.id, slide]))
+      for (const slide of slides) {
+        previousMap.delete(slide.id)
       }
-      if (length > 1) startBackgroundTimer()
+
+      if (previousMap.size > 0) {
+        const removedIds = new Set<string>()
+        previousMap.forEach((slide, id) => {
+          removedIds.add(id)
+          if (slide.url.startsWith('blob:')) {
+            releaseObjectUrl(slide.url, 'remove')
+          }
+        })
+        animationQueue.value = animationQueue.value.filter((descriptor) => {
+          if (removedIds.has(descriptor.slideId)) {
+            cancelFadeTimer(descriptor.id)
+            return false
+          }
+          return true
+        })
+      }
+
+      if (slides.length === 0) {
+        activeBackgroundIndex.value = 0
+        stopBackgroundTimer()
+        return
+      }
+
+      if (activeBackgroundIndex.value >= slides.length) {
+        activeBackgroundIndex.value = slides.length - 1
+      }
+
+      if (slides.length > 1) startBackgroundTimer()
       else stopBackgroundTimer()
     },
+    { immediate: true },
   )
-
-  watch(backgroundImages, (v) => save('backgroundImages', v), { deep: true })
-  watch(activeBackgroundIndex, (v) => save('activeBackgroundIndex', v))
 
   watch(
     currentSlide,
     (next) => {
       if (!next) {
         clearFadeTimers()
-        backgroundLayers.value = []
+        animationQueue.value = []
         return
       }
-      const newLayer: BackgroundLayer = (() => {
-        const angle = Math.random() * Math.PI * 2
-        const distance = 4 + Math.random() * 6
-        const offsetX = Math.cos(angle) * distance
-        const offsetY = Math.sin(angle) * distance
-        const durationMs = 70000 + Math.random() * 40000
-        const scale = clampZoom(backgroundZoom.value)
-
-        return {
-          id: `${next.id}-${Date.now()}`,
-          url: next.url,
-          panFromX: -offsetX,
-          panFromY: -offsetY,
-          panToX: offsetX,
-          panToY: offsetY,
-          durationMs,
-          scale,
-        }
-      })()
-      const previous = backgroundLayers.value[0]
-      backgroundLayers.value = previous ? [newLayer, ...backgroundLayers.value] : [newLayer]
-      if (previous && typeof window !== 'undefined') {
-        if (fadeTimers.has(previous.id)) {
-          window.clearTimeout(fadeTimers.get(previous.id)!)
-        }
-        try {
-          const timer = window.setTimeout(() => {
-            try {
-              backgroundLayers.value = backgroundLayers.value.filter((layer) => layer.id !== previous.id)
-              fadeTimers.delete(previous.id)
-            } catch (error) {
-              reportError('We could not update the background transition.', error, {
-                context: backgroundContext('transition'),
-                tone: 'warning',
-              })
-            }
-          }, crossfadeMs)
-          fadeTimers.set(previous.id, timer)
-        } catch (error) {
-          reportError('We could not update the background transition.', error, {
-            context: backgroundContext('transition'),
-            tone: 'warning',
-          })
-        }
-      }
-      if (backgroundLayers.value.length > 2) {
-        const extras = backgroundLayers.value.slice(2)
-        if (typeof window !== 'undefined') {
-          extras.forEach((layer) => {
-            if (fadeTimers.has(layer.id)) {
-              window.clearTimeout(fadeTimers.get(layer.id)!)
-              fadeTimers.delete(layer.id)
-            }
-          })
-        }
-        backgroundLayers.value = backgroundLayers.value.slice(0, 2)
-      }
+      pushAnimationForSlide(next.id)
     },
     { immediate: true },
   )
@@ -210,7 +431,11 @@ export function useBackgrounds() {
   })
   onBeforeUnmount(() => {
     stopBackgroundTimer()
-    backgroundImages.value.forEach((slide) => releaseObjectUrl(slide.url, 'teardown'))
+    backgroundImages.value.forEach((slide) => {
+      if (slide.url.startsWith('blob:')) {
+        releaseObjectUrl(slide.url, 'teardown')
+      }
+    })
     clearFadeTimers()
   })
 
@@ -220,12 +445,33 @@ export function useBackgrounds() {
       const clamped = clampZoom(value)
       if (clamped !== value) {
         backgroundZoom.value = clamped
-        return
       }
-      save('backgroundZoom', clamped)
-      backgroundLayers.value = backgroundLayers.value.map((layer) => ({ ...layer, scale: clamped }))
     },
     { immediate: true },
+  )
+
+  watchDebounced(
+    persistedSlides,
+    (value) => {
+      save(
+        'backgroundImages',
+        value.map((slide) => ({ id: slide.id, url: slide.url })),
+      )
+    },
+    { deep: true, debounce: 300, maxWait: 1500 },
+  )
+
+  watchDebounced(activeBackgroundIndex, (value) => save('activeBackgroundIndex', value), {
+    debounce: 200,
+    maxWait: 1000,
+  })
+
+  watchDebounced(
+    backgroundZoom,
+    (value) => {
+      save('backgroundZoom', clampZoom(value))
+    },
+    { debounce: 250, maxWait: 1500 },
   )
 
   const setBackgroundZoom = (value: number) => {
@@ -234,7 +480,6 @@ export function useBackgrounds() {
 
   return {
     backgroundImages,
-    activeBackgroundIndex,
     backgroundLayers,
     baseGradient,
     currentSlide,

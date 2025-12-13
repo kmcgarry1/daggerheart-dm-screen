@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { shallowRef, watchEffect } from 'vue'
 import type { Ref } from 'vue'
 
 import { getWidgetTypeLabel } from './options'
@@ -8,7 +8,11 @@ import { reportError } from '@/shared/utils'
 const dockContext = (action: string) => `widget-dock:${action}`
 
 export function useWidgetDock(widgets: Ref<DashboardWidget[]>, onFocus?: (id: string) => void) {
-  const minimizedWidgets = computed(() => widgets.value.filter((widget) => widget.hidden))
+  const minimizedWidgets = shallowRef<DashboardWidget[]>([])
+
+  watchEffect(() => {
+    minimizedWidgets.value = widgets.value.filter((widget) => widget.hidden)
+  })
 
   const restoreWidget = (id: string) => {
     try {
