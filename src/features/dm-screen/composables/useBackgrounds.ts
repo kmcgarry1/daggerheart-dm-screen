@@ -71,19 +71,31 @@ const hydrateSlides = (slides: BackgroundSlide[]) => slides.filter(isSerializabl
 const serializeSlides = (slides: BackgroundSlide[]) =>
   slides.filter(isSerializableSlide).map((slide) => ({ id: slide.id, url: slide.url }))
 
+const BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
 const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(buffer).toString('base64')
-  }
-  let binary = ''
   const bytes = new Uint8Array(buffer)
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte)
+  let output = ''
+
+  for (let offset = 0; offset < bytes.length; offset += 3) {
+    const byte1 = bytes[offset] ?? 0
+    const byte2 = offset + 1 < bytes.length ? bytes[offset + 1] ?? 0 : 0
+    const byte3 = offset + 2 < bytes.length ? bytes[offset + 2] ?? 0 : 0
+
+    const combined = (byte1 << 16) | (byte2 << 8) | byte3
+
+    const enc1 = (combined >> 18) & 0x3f
+    const enc2 = (combined >> 12) & 0x3f
+    const enc3 = (combined >> 6) & 0x3f
+    const enc4 = combined & 0x3f
+
+    output += BASE64_CHARS[enc1]
+    output += BASE64_CHARS[enc2]
+    output += offset + 1 < bytes.length ? BASE64_CHARS[enc3] : '='
+    output += offset + 2 < bytes.length ? BASE64_CHARS[enc4] : '='
   }
-  if (typeof btoa === 'function') {
-    return btoa(binary)
-  }
-  throw new Error('Base64 encoding is not supported in this environment.')
+
+  return output
 }
 
 const readFileAsDataUrl = (file: File): Promise<string> => {
