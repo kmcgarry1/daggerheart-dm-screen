@@ -1,73 +1,54 @@
-# daggerheart-dmscreen-site
+# Daggerheart DM Screen
 
-This template should help get you started developing with Vue 3 in Vite.
+A Vue 3 + Vite experience for running a Daggerheart-inspired digital Dungeon Master screen.
 
-## Recommended IDE Setup
+The project has been reorganized to follow a modern, domain-driven layout with clear boundaries between
+application bootstrapping, feature modules, and shared utilities. Components, composables, and supporting
+logic now live alongside the features they power, making it easier to navigate and extend the codebase.
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Project structure
 
-## Recommended Browser Setup
+```
+src/
+├─ app/                 # Application shell (entry point, router, global styles)
+├─ features/            # Self-contained feature areas (dm-screen, tracker, countdown, etc.)
+├─ shared/              # Cross-cutting UI primitives, utilities, and composables
+└─ __tests__/           # Unit tests
+```
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+Each feature exports its public API through an `index.ts`, enabling concise imports such as
+`import { DMScreenPage } from '@/features/dm-screen'`.
 
-## Type Support for `.vue` Imports in TS
+## Scripts
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+Install dependencies and run the available commands with npm:
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
+```bash
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
+# Development server
 npm run dev
-```
 
-### Type-Check, Compile and Minify for Production
-
-```sh
+# Production build
 npm run build
-```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
+# Unit tests
 npm run test:unit
-```
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
-
-```sh
-# Install browsers for the first run
-npx playwright install
-
-# When testing on CI, must build the project first
-npm run build
-
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
+# Linting
 npm run lint
 ```
+
+Playwright end-to-end tests are still available via `npm run test:e2e` after installing the browsers with
+`npx playwright install`.
+
+## Tooling
+
+- **Framework:** Vue 3 + Vite
+- **Type checking:** TypeScript + Volar in editors
+- **State management:** Pinia (registered in `src/app/index.ts`)
+- **Testing:** Vitest, Vue Test Utils
+- **Linting:** ESLint with the default Vue recommended rules
+
+This structure keeps the application scalable while staying consistent with contemporary Vue
+architecture practices.
